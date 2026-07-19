@@ -1,13 +1,18 @@
-/** TTS via Web Speech API, styled after the show's Pokédex ("Dexter"):
- * a flat, deadpan, robotic delivery. True voice cloning is impossible
- * offline on iOS 12 Safari, so we pick the most robotic system voice
- * available (Fred, the classic MacInTalk robot voice iOS ships) and
- * flatten the prosody with a low pitch and measured rate. */
+/** TTS styled after the show's Pokédex ("Dexter"), two tiers:
+ * 1. Bundled pre-rendered clips (web/data/audio/<slug>.mp3, built by
+ *    scripts/build-voice-clips.py) — one fixed robotic voice on every
+ *    device, played fully offline via <audio>.
+ * 2. Web Speech API fallback when a clip is missing or fails: the most
+ *    robotic system voice available (Fred, the classic MacInTalk robot
+ *    voice iOS ships) with flattened low-pitch prosody. */
 
 /** Ranked by how close each voice gets to the show's robotic register. */
 var DEX_VOICE_PREFS = ["fred", "alex", "aaron", "daniel"];
 var DEX_RATE = 0.95;
 var DEX_PITCH = 0.5;
+
+/** @type {HTMLAudioElement | null} */
+var currentAudio = null;
 
 /**
  * iOS populates getVoices() asynchronously and voiceschanged is unreliable
@@ -43,7 +48,7 @@ function pickDexVoice() {
  * @param {string} text
  * @returns {Promise<string>}
  */
-function speak(text) {
+function speakSynth(text) {
   return new Promise(function (resolve, reject) {
     if (!window.speechSynthesis) {
       reject(new Error("speechSynthesis not available"));
@@ -66,7 +71,50 @@ function speak(text) {
   });
 }
 
+/**
+ * @param {string} slug
+ * @returns {Promise<string>}
+ */
+function speakClip(slug) {
+  return new Promise(function (resolve, reject) {
+    var audio = new Audio("data/audio/" + slug + ".mp3");
+    currentAudio = audio;
+    audio.onended = function () {
+      if (currentAudio === audio) currentAudio = null;
+      resolve("clip:" + slug);
+    };
+    audio.onerror = function () {
+      reject(new Error("clip unavailable: " + slug));
+    };
+    var p = audio.play();
+    if (p && p.catch) {
+      p.catch(function (/** @type {any} */ err) {
+        reject(err instanceof Error ? err : new Error(String(err)));
+      });
+    }
+  });
+}
+
+/**
+ * @param {string} text
+ * @param {string} [slug]
+ * @returns {Promise<string>}
+ */
+function speak(text, slug) {
+  stopSpeaking();
+  if (slug) {
+    return speakClip(slug).catch(function () {
+      return speakSynth(text);
+    });
+  }
+  return speakSynth(text);
+}
+
 function stopSpeaking() {
+  if (currentAudio) {
+    currentAudio.pause();
+    currentAudio = null;
+  }
   if (window.speechSynthesis) window.speechSynthesis.cancel();
 }
 

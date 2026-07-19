@@ -1,5 +1,19 @@
 # Dexter-style Pokédex voice — design
 
+> **Revision (same day):** the user authorized changing the decision lock to
+> get closer to the show. The lock's TTS row now reads: **bundled
+> pre-rendered clips** (`web/data/audio/`, built by
+> `scripts/build-voice-clips.py` at build time — same build-once-offline
+> pattern as the species DB) with the tuned `speechSynthesis` profile below
+> kept as fallback. Narration is templated and deterministic, so all 151
+> lines are renderable ahead of time with one fixed robotic voice
+> (Piper > festival `kal_diphone` > espeak-ng, sox pitch/normalize), which
+> also frees the 1 GB phone from synth CPU. Voice-cloning the show's actual
+> actor remains rejected (real-person voice imitation; infeasible offline).
+> `manifest.json` narration hashes + `tests/test_voice_clips.py` guard
+> against stale clips. The section below is the original Web-Speech-only
+> design, still accurate for the fallback tier.
+
 Goal: make the spoken entry sound like the Pokédex from the Pokémon anime
 ("Dexter"): a flat, deadpan, robotic delivery.
 

@@ -39,7 +39,7 @@ testpaths = ["tests"]
 
 [tool.mypy]
 python_version = "3.12"
-files = ["poke", "scripts/build-offline-db.py"]
+files = ["poke", "scripts/build-offline-db.py", "scripts/build-voice-clips.py"]
 warn_return_any = true
 warn_unused_configs = true
 warn_redundant_casts = true

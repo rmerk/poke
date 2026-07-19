@@ -3,6 +3,7 @@
 Phase 0 research for a personal MVP: scan a physical TCG card, identify the Pokémon species, show a show-host-style Pokédex entry, and speak it. Goal: pick a workable stack, not a perfect long-term architecture.
 
 **Change log:** Decision lock updated to **iPhone A1533 (iPhone 5s)** instead of Raspberry Pi Zero 2 W — owned phone-in-shell, built-in battery/camera/display/speaker.
+**Change log (TTS):** TTS decision updated from live `speechSynthesis` to **pre-rendered show-style clips** bundled in `web/data/audio/` (built offline by `scripts/build-voice-clips.py`), with `speechSynthesis` kept as fallback. Motivation: match the show's robotic Pokédex voice, which system voices can't reproduce and which must sound identical on every device. Runtime stays fully offline; the same build-once pattern as the species DB.
 
 Sources consulted: [PokéAPI fair use](https://pokeapi.co/docs/v2), Apple device A1533 = iPhone 5s (max iOS 12.x), [Web Speech API](https://developer.mozilla.org/en-US/docs/Web/API/Web_Speech_API), Tesseract.js. Benchmarks below are **estimates** unless labeled otherwise.
 
@@ -84,12 +85,14 @@ Sources consulted: [PokéAPI fair use](https://pokeapi.co/docs/v2), Apple device
 
 ## 6. TTS
 
-| Option | Voice quality | Offline | 5s fit |
-|--------|---------------|---------|--------|
-| **Web Speech API (`speechSynthesis`)** | 3–4 (system voice) | 5 (on-device) | 5 |
-| Piper / espeak in Python | 4 | 5 | N/A on phone |
+| Option | Voice quality | Show-voice match | Offline | 5s fit |
+|--------|---------------|------------------|---------|--------|
+| **Pre-rendered bundled clips** (`web/data/audio/`, built offline) | 4 | 4 (fixed robotic voice, tunable at build time) | 5 (playback only) | 5 (no synth CPU) |
+| Web Speech API (`speechSynthesis`) | 3–4 (system voice) | 2–3 (device-dependent) | 5 (on-device) | 5 |
+| Piper / espeak in Python | 4 | 3 | 5 | N/A on phone |
+| Voice-cloning the show's actor | 5 | 5 | 1–5 | 1 | 
 
-**Pick:** `speechSynthesis` on iPhone. Python Piper/espeak remains for Mac CLI demos only.
+**Pick:** Pre-rendered clips as primary — narration is templated and deterministic, so every species' line is known at build time; `scripts/build-voice-clips.py` renders all of them once (Piper > festival kal_diphone > espeak-ng, plus sox pitch/normalize) and the phone just plays MP3s. `speechSynthesis` (tuned robotic profile, prefers the Fred voice) stays as fallback for missing clips. Cloning the actual voice actor's voice is rejected — not feasible offline and imitating a real person's voice is out of scope for a fan demo. Python Piper/espeak remains for Mac CLI demos only.
 
 ---
 
@@ -173,7 +176,7 @@ Subsequent phases follow these unless a documented change is needed:
 | Card ID approach | Tesseract.js OCR → fuzzy match → manual search |
 | Data source + cache | **Bundled offline Gen 1 DB** (`web/data/offline/species_db.json`); no live PokéAPI at runtime |
 | Narration | Templated show-style (no LLM in MVP) |
-| TTS | Web Speech API (`speechSynthesis`) — on-device |
+| TTS | **Bundled pre-rendered show-style clips** (`web/data/audio/`, rebuilt via `scripts/build-voice-clips.py`); `speechSynthesis` (robotic profile) as fallback |
 | UI runtime | **Static web app in Safari** (`web/`); Python retained for Mac tests only |
 | Power | **iPhone battery** |
 | Network | **Offline required** — vendored OCR + local species DB; LAN-only serve OK |
