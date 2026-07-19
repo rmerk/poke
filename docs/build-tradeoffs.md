@@ -92,7 +92,7 @@ Sources consulted: [PokéAPI fair use](https://pokeapi.co/docs/v2), Apple device
 | Piper / espeak in Python | 4 | 3 | 5 | N/A on phone |
 | Voice-cloning the show's actor | 5 | 5 | 1–5 | 1 | 
 
-**Pick:** Pre-rendered clips as primary — narration is templated and deterministic, so every species' line is known at build time; `scripts/build-voice-clips.py` renders all of them once (Piper > festival kal_diphone > espeak-ng, plus sox pitch/normalize) and the phone just plays MP3s. `speechSynthesis` (tuned robotic profile, prefers the Fred voice) stays as fallback for missing clips. Cloning the actual voice actor's voice is rejected — not feasible offline and imitating a real person's voice is out of scope for a fan demo. Python Piper/espeak remains for Mac CLI demos only.
+**Pick:** Pre-rendered clips as primary — narration is templated and deterministic, so every species' line is known at build time; `scripts/build-voice-clips.py` renders all of them once (Piper > espeak-ng+mbrola us2 > festival kal_diphone > espeak-ng, plus sox pitch/normalize) and the phone just plays MP3s. `speechSynthesis` (tuned robotic profile, prefers the Fred voice) stays as fallback for missing clips. Cloning the actual voice actor's voice is rejected — not feasible offline and imitating a real person's voice is out of scope for a fan demo. Python Piper/espeak remains for Mac CLI demos only.
 
 ---
 

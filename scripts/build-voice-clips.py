@@ -8,8 +8,10 @@ manifest narration hashes let tests/test_voice_clips.py catch stale clips.
 
 Engines (most show-like first):
   piper     natural deadpan read — needs --piper-model (download separately)
+  mbrola    espeak-ng frontend + mbrola US male diphone voice (apt: mbrola
+            mbrola-us2) — smoother than festival; default when available
   festival  kal_diphone, the classic robotic male voice (apt: festival
-            festvox-kallpc16k) — default when no Piper model is given
+            festvox-kallpc16k)
   espeak    espeak-ng, most synthetic-sounding fallback
 """
 
@@ -41,13 +43,23 @@ def tts_text(narration: str) -> str:
     return " ".join(s.split())
 
 
-def synth_wav(text: str, wav: Path, engine: str, piper_model: str | None) -> None:
+def synth_wav(
+    text: str, wav: Path, engine: str, piper_model: str | None, mbrola_voice: str
+) -> None:
     if engine == "piper":
         if not piper_model:
             raise SystemExit("--engine piper requires --piper-model")
         subprocess.run(
             ["piper", "--model", piper_model, "--output_file", str(wav)],
             input=text.encode("utf-8"),
+            check=True,
+        )
+    elif engine == "mbrola":
+        subprocess.run(
+            [
+                "espeak-ng", "-v", f"mb-{mbrola_voice}", "-s", "150",
+                "-w", str(wav), text,
+            ],
             check=True,
         )
     elif engine == "festival":
@@ -85,29 +97,36 @@ def encode_mp3(wav: Path, mp3: Path) -> None:
     )
 
 
-def pick_engine(requested: str, piper_model: str | None) -> str:
+def pick_engine(requested: str, piper_model: str | None, mbrola_voice: str) -> str:
     if requested != "auto":
         return requested
     if piper_model:
         return "piper"
+    mbrola_db = Path("/usr/share/mbrola") / mbrola_voice / mbrola_voice
+    if shutil.which("espeak-ng") and shutil.which("mbrola") and mbrola_db.exists():
+        return "mbrola"
     if shutil.which("text2wave"):
         return "festival"
     if shutil.which("espeak-ng") or shutil.which("espeak"):
         return "espeak"
-    raise SystemExit("No TTS engine found (need piper, festival, or espeak-ng).")
+    raise SystemExit("No TTS engine found (need piper, mbrola, festival, or espeak-ng).")
 
 
 def main() -> None:
     ap = argparse.ArgumentParser(description=__doc__)
-    ap.add_argument("--engine", choices=["auto", "piper", "festival", "espeak"], default="auto")
+    ap.add_argument("--engine", choices=["auto", "piper", "mbrola", "festival", "espeak"],
+                    default="auto")
     ap.add_argument("--piper-model", default=None, help="Path to a Piper .onnx voice model")
+    ap.add_argument("--mbrola-voice", default="us2",
+                    help="mbrola voice db name (us1/us2/us3)")
     ap.add_argument("--pitch-cents", type=int, default=-100,
                     help="sox pitch shift toward the show's low register (0 = off)")
     ap.add_argument("--out-dir", type=Path, default=DEFAULT_OUT)
     ap.add_argument("--only", nargs="*", default=None, help="Limit to these slugs")
     args = ap.parse_args()
 
-    engine = pick_engine(args.engine, args.piper_model)
+    engine = pick_engine(args.engine, args.piper_model, args.mbrola_voice)
+    engine_label = f"mbrola:{args.mbrola_voice}" if engine == "mbrola" else engine
     has_sox = shutil.which("sox") is not None
     if not shutil.which("lame"):
         raise SystemExit("lame not found (needed for MP3 encoding).")
@@ -121,7 +140,7 @@ def main() -> None:
     out_dir: Path = args.out_dir
     out_dir.mkdir(parents=True, exist_ok=True)
     manifest_path = out_dir / "manifest.json"
-    manifest: dict = {"version": 1, "engine": engine, "pitchCents": args.pitch_cents,
+    manifest: dict = {"version": 1, "engine": engine_label, "pitchCents": args.pitch_cents,
                       "bySlug": {}}
     if manifest_path.exists() and args.only:
         manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
@@ -135,7 +154,8 @@ def main() -> None:
             narration = build_entry(record_to_pokemon_data(record)).narration
             raw_wav = tmp_dir / f"{slug}.raw.wav"
             fx_wav = tmp_dir / f"{slug}.fx.wav"
-            synth_wav(tts_text(narration), raw_wav, engine, args.piper_model)
+            synth_wav(tts_text(narration), raw_wav, engine, args.piper_model,
+                      args.mbrola_voice)
             if has_sox:
                 robotize(raw_wav, fx_wav, args.pitch_cents)
             else:
