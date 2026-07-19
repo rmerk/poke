@@ -10,12 +10,15 @@ Stack lock: [`docs/build-tradeoffs.md`](docs/build-tradeoffs.md).
 
 ## Primary: iPhone A1533 (Safari, offline)
 
+**Live (GitHub Pages):** https://rmerk.github.io/poke/
+
 ```bash
 cd /Users/rchoi/Personal/poke
 ./scripts/serve-web.sh
 ```
 
-Phone + Mac on the **same LAN** (internet not required). Safari → `http://<mac-lan-ip>:8080`
+Local: phone + Mac on the **same LAN**. Safari → `http://<mac-lan-ip>:8080`  
+Pages: Safari → the live URL (HTTPS). Runtime still uses only bundled Gen 1 data + Tesseract (no PokéAPI / CDN).
 
 | Control | Action |
 |---------|--------|
