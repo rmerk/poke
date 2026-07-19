@@ -1,63 +1,111 @@
 /** Pocket Pokedex — offline-first UI for iPhone A1533 (Safari). */
 
 (function () {
+  /** @type {string[]} */
   var speciesNames = [];
+  /** @type {DexEntryView | null} */
   var currentEntry = null;
+  /** @type {HTMLImageElement | null} */
   var previewImage = null;
+  /** @type {MatchCandidate[]} */
   var lastCandidates = [];
 
+  /**
+   * @param {string} id
+   * @returns {HTMLElement}
+   */
+  function mustEl(id) {
+    var el = document.getElementById(id);
+    if (!el) throw new Error("Missing #" + id);
+    return el;
+  }
+
+  /**
+   * @param {string} id
+   * @returns {HTMLImageElement}
+   */
+  function mustImg(id) {
+    return /** @type {HTMLImageElement} */ (mustEl(id));
+  }
+
+  /**
+   * @param {string} id
+   * @returns {HTMLInputElement}
+   */
+  function mustInput(id) {
+    return /** @type {HTMLInputElement} */ (mustEl(id));
+  }
+
+  /** @type {{ [key: string]: HTMLElement }} */
   var screens = {
-    idle: document.getElementById("screen-idle"),
-    busy: document.getElementById("screen-busy"),
-    preview: document.getElementById("screen-preview"),
-    search: document.getElementById("screen-search"),
-    entry: document.getElementById("screen-entry"),
-    error: document.getElementById("screen-error"),
+    idle: mustEl("screen-idle"),
+    busy: mustEl("screen-busy"),
+    preview: mustEl("screen-preview"),
+    search: mustEl("screen-search"),
+    entry: mustEl("screen-entry"),
+    error: mustEl("screen-error"),
   };
 
+  /**
+   * @param {string} name
+   */
   function showScreen(name) {
     var key;
     for (key in screens) {
-      if (screens.hasOwnProperty(key)) {
+      if (Object.prototype.hasOwnProperty.call(screens, key)) {
         screens[key].className = "screen" + (key === name ? " active" : "");
       }
     }
   }
 
+  /**
+   * @param {string} [title]
+   * @param {string} [status]
+   */
   function setBusy(title, status) {
-    document.getElementById("busy-title").textContent = title || "Working…";
-    document.getElementById("busy-status").textContent = status || "";
+    mustEl("busy-title").textContent = title || "Working…";
+    mustEl("busy-status").textContent = status || "";
     showScreen("busy");
   }
 
+  /**
+   * @param {string} msg
+   */
   function setError(msg) {
-    document.getElementById("error-message").textContent = msg;
+    mustEl("error-message").textContent = msg;
     showScreen("error");
   }
 
+  /**
+   * @param {DexEntryView} entry
+   */
   function renderEntry(entry) {
     currentEntry = entry;
-    document.getElementById("entry-title").textContent = entry.title;
-    document.getElementById("entry-meta").textContent =
+    mustEl("entry-title").textContent = entry.title;
+    mustEl("entry-meta").textContent =
       entry.typesLine + " · " + entry.category + " · " + entry.heightWeight;
-    document.getElementById("entry-narration").textContent = entry.narration;
-    var ul = document.getElementById("entry-facts");
+    mustEl("entry-narration").textContent = entry.narration;
+    var ul = mustEl("entry-facts");
     ul.innerHTML = "";
     for (var i = 0; i < entry.facts.length; i++) {
       var li = document.createElement("li");
       li.textContent = entry.facts[i];
       ul.appendChild(li);
     }
-    document.getElementById("entry-attr").textContent = entry.attribution;
+    mustEl("entry-attr").textContent = entry.attribution;
     showScreen("entry");
   }
 
+  /**
+   * @param {Partial<MatchResult> & { score: number, candidates?: MatchCandidate[] }} match
+   * @param {string} [statusMsg]
+   */
   function renderCandidates(match, statusMsg) {
     lastCandidates = match.candidates || [];
-    document.getElementById("search-status").textContent =
+    mustEl("search-status").textContent =
       statusMsg ||
       "Low confidence (" + Math.round(match.score) + "). Confirm or type a name.";
-    var box = document.getElementById("candidates");
+    var box = mustEl("candidates");
     box.innerHTML = "";
     for (var i = 0; i < lastCandidates.length; i++) {
       (function (c, idx) {
@@ -73,32 +121,40 @@
     showScreen("search");
   }
 
+  /**
+   * @param {string} name
+   * @returns {Promise<void>}
+   */
   function lookupName(name) {
     setBusy("Looking up " + name + "…", "Offline Pokédex");
     return PokeApi.fetchPokemon(name)
       .then(function (data) {
         renderEntry(PokeEntry.buildEntry(data));
       })
-      .catch(function (err) {
+      .catch(function (/** @type {any} */ err) {
         setError(String(err.message || err));
       });
   }
 
+  /**
+   * @param {HTMLImageElement} img
+   * @returns {Promise<void>}
+   */
   function identifyImage(img) {
     setBusy("Reading card…", "On-device OCR (offline)");
     return PokeOcr.extractNameFromImage(img, function (s) {
-      document.getElementById("busy-status").textContent = s;
+      mustEl("busy-status").textContent = s;
     })
       .then(function (ocr) {
         var match = PokeMatch.matchName(ocr.text, speciesNames, PokeOcr.MIN_CONF);
-        document.getElementById("busy-status").textContent =
+        mustEl("busy-status").textContent =
           "OCR: " + (ocr.text || "(empty)") + " → " + match.name + " (" + Math.round(match.score) + ")";
         if (match.accepted) {
           return lookupName(match.name);
         }
         renderCandidates(match);
       })
-      .catch(function (err) {
+      .catch(function (/** @type {any} */ err) {
         renderCandidates(
           { score: 0, candidates: [] },
           "OCR failed (" + (err.message || err) + "). Search instead — still offline."
@@ -106,16 +162,22 @@
       });
   }
 
+  /**
+   * @returns {Promise<void>}
+   */
   function boot() {
     return PokeApi.loadDb().then(function (payload) {
       speciesNames = PokeApi.listSpeciesNames(payload);
     });
   }
 
+  /**
+   * @param {File | undefined} file
+   */
   function onFile(file) {
     if (!file) return;
     var url = URL.createObjectURL(file);
-    var img = document.getElementById("preview-img");
+    var img = mustImg("preview-img");
     img.onload = function () {
       previewImage = img;
       showScreen("preview");
@@ -128,10 +190,10 @@
     setBusy("Demo…", "Loading fixture card for OCR");
     var img = new Image();
     img.onload = function () {
-      document.getElementById("preview-img").src = img.src;
-      previewImage = document.getElementById("preview-img");
+      mustImg("preview-img").src = img.src;
+      previewImage = mustImg("preview-img");
       showScreen("preview");
-      document.getElementById("preview-status").textContent =
+      mustEl("preview-status").textContent =
         "Fixture loaded. Running offline OCR → match…";
       identifyImage(previewImage);
     };
@@ -147,37 +209,37 @@
     showScreen("idle");
   }
 
-  document.getElementById("btn-scan").onclick = function () {
-    document.getElementById("file-input").click();
+  mustEl("btn-scan").onclick = function () {
+    mustInput("file-input").click();
   };
-  document.getElementById("btn-back").onclick = goBack;
-  document.getElementById("btn-speak").onclick = function () {
+  mustEl("btn-back").onclick = goBack;
+  mustEl("btn-speak").onclick = function () {
     if (!currentEntry) return;
-    PokeTts.speak(currentEntry.narration).catch(function (e) {
+    PokeTts.speak(currentEntry.narration).catch(function (/** @type {any} */ e) {
       setError(String(e.message || e));
     });
   };
-  document.getElementById("btn-next").onclick = function () {
+  mustEl("btn-next").onclick = function () {
     if (screens.search.className.indexOf("active") !== -1 && lastCandidates.length) {
       lookupName(lastCandidates[0].name);
       return;
     }
-    document.getElementById("file-input").click();
+    mustInput("file-input").click();
   };
-  document.getElementById("btn-demo").onclick = runDemo;
-  document.getElementById("btn-search-idle").onclick = function () {
+  mustEl("btn-demo").onclick = runDemo;
+  mustEl("btn-search-idle").onclick = function () {
     renderCandidates({ score: 0, candidates: [] }, "Type a Pokémon name (offline list).");
-    document.getElementById("search-input").focus();
+    mustInput("search-input").focus();
   };
-  document.getElementById("btn-identify").onclick = function () {
+  mustEl("btn-identify").onclick = function () {
     if (!previewImage) return;
     identifyImage(previewImage);
   };
-  document.getElementById("btn-reshoot").onclick = function () {
-    document.getElementById("file-input").click();
+  mustEl("btn-reshoot").onclick = function () {
+    mustInput("file-input").click();
   };
-  document.getElementById("btn-search-go").onclick = function () {
-    var q = document.getElementById("search-input").value;
+  mustEl("btn-search-go").onclick = function () {
+    var q = mustInput("search-input").value;
     var match = PokeMatch.matchName(q, speciesNames, PokeOcr.MIN_CONF);
     if (match.accepted) {
       lookupName(match.name);
@@ -185,13 +247,14 @@
       renderCandidates(match, "Confirm a candidate or refine the spelling.");
     }
   };
-  document.getElementById("file-input").onchange = function (e) {
-    var f = e.target.files && e.target.files[0];
-    onFile(f);
-    e.target.value = "";
+  mustInput("file-input").onchange = function (e) {
+    var target = /** @type {HTMLInputElement} */ (e.target);
+    var f = target.files && target.files[0];
+    onFile(f || undefined);
+    target.value = "";
   };
 
-  boot().catch(function (e) {
+  boot().catch(function (/** @type {any} */ e) {
     setError("Failed to load offline Pokédex: " + e);
   });
 })();

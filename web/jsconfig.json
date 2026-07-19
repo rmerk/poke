@@ -1,0 +1,14 @@
+{
+  "compilerOptions": {
+    "checkJs": true,
+    "noEmit": true,
+    "target": "ES2017",
+    "lib": ["ES2017", "DOM"],
+    "strict": true,
+    "noImplicitAny": true,
+    "strictNullChecks": true,
+    "maxNodeModuleJsDepth": 0
+  },
+  "include": ["js/**/*.js", "js/**/*.d.ts"],
+  "exclude": ["vendor/**"]
+}

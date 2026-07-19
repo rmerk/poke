@@ -1,5 +1,9 @@
 /** Show-host entry builder. */
 
+/**
+ * @param {PokemonRecord} data
+ * @returns {DexEntryView}
+ */
 function buildEntry(data) {
   var typesLine = data.types && data.types.length ? data.types.join(" / ") : "Unknown";
   var hw =

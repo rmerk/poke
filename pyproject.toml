@@ -16,7 +16,12 @@ dependencies = [
 [project.optional-dependencies]
 ocr = ["pytesseract>=0.3.10"]
 tts = ["piper-tts>=1.2.0"]
-dev = ["pytest>=8.0"]
+dev = [
+    "pytest>=8.0",
+    "mypy>=1.8",
+    "types-PyYAML>=6.0",
+    "types-requests>=2.31",
+]
 
 [project.scripts]
 poke = "poke.__main__:main"
@@ -31,3 +36,32 @@ include = ["poke*"]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
+
+[tool.mypy]
+python_version = "3.12"
+files = ["poke", "scripts/build-offline-db.py"]
+warn_return_any = true
+warn_unused_configs = true
+warn_redundant_casts = true
+warn_unused_ignores = true
+no_implicit_optional = true
+check_untyped_defs = true
+disallow_incomplete_defs = true
+pretty = true
+show_error_codes = true
+
+[[tool.mypy.overrides]]
+module = [
+    "cv2",
+    "numpy",
+    "numpy.*",
+    "pygame",
+    "pygame.*",
+    "pytesseract",
+    "piper",
+    "RPi",
+    "RPi.*",
+]
+ignore_missing_imports = true
+follow_imports = "skip"
+

@@ -1,8 +1,14 @@
 /** Fuzzy species match — case-folded, multi-scorer, iOS 12 friendly. */
 
+/**
+ * @param {string} a
+ * @param {string} b
+ * @returns {number}
+ */
 function ratio(a, b) {
   if (!a.length && !b.length) return 100;
   if (!a.length || !b.length) return 0;
+  /** @type {number[][]} */
   var matrix = [];
   var i, j;
   for (i = 0; i <= b.length; i++) matrix[i] = [i];
@@ -25,6 +31,11 @@ function ratio(a, b) {
   return ((maxLen - dist) / maxLen) * 100;
 }
 
+/**
+ * @param {string} a
+ * @param {string} b
+ * @returns {number}
+ */
 function partialRatio(a, b) {
   var shorter = a.length <= b.length ? a : b;
   var longer = a.length <= b.length ? b : a;
@@ -38,18 +49,30 @@ function partialRatio(a, b) {
   return best;
 }
 
+/**
+ * @param {string} query
+ * @param {string} name
+ * @returns {number}
+ */
 function scorePair(query, name) {
   var q = query.toLowerCase();
   var n = name.toLowerCase();
   return Math.max(ratio(q, n), partialRatio(q, n));
 }
 
+/**
+ * @param {string} query
+ * @param {string[]} names
+ * @param {number} [minConfidence]
+ * @returns {MatchResult}
+ */
 function matchName(query, names, minConfidence) {
   minConfidence = minConfidence == null ? 72 : minConfidence;
   var q = (query || "").trim();
   if (!q) {
     return { name: "", score: 0, accepted: false, candidates: [] };
   }
+  /** @type {MatchCandidate[]} */
   var scored = [];
   for (var i = 0; i < names.length; i++) {
     scored.push({ name: names[i], score: scorePair(q, names[i]) });

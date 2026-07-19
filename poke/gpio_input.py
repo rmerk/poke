@@ -27,7 +27,7 @@ class GpioButtons:
             return
 
         try:
-            import RPi.GPIO as GPIO  # type: ignore
+            import RPi.GPIO as GPIO
         except ImportError:
             self.enabled = False
             return

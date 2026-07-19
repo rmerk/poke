@@ -1,5 +1,9 @@
 /** TTS via Web Speech API (iPhone system voice). */
 
+/**
+ * @param {string} text
+ * @returns {Promise<string>}
+ */
 function speak(text) {
   return new Promise(function (resolve, reject) {
     if (!window.speechSynthesis) {
@@ -13,7 +17,7 @@ function speak(text) {
     u.onend = function () {
       resolve("speechSynthesis");
     };
-    u.onerror = function (e) {
+    u.onerror = function () {
       reject(new Error("TTS error"));
     };
     window.speechSynthesis.speak(u);

@@ -1,0 +1,31 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install package
+        run: |
+          python -m pip install --upgrade pip
+          pip install -e ".[dev,ocr]"
+
+      - name: Typecheck Python
+        run: mypy
+
+      - name: Typecheck web JS
+        run: npx -y -p typescript@5.6.3 tsc -p web/jsconfig.json --noEmit
+
+      - name: Tests
+        run: pytest

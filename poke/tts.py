@@ -64,7 +64,7 @@ def speak_piper(text: str, config: dict[str, Any]) -> None:
             _ = proc
         else:
             try:
-                from piper import PiperVoice  # type: ignore
+                from piper import PiperVoice
             except ImportError as exc:
                 raise TtsError(
                     "piper-tts not installed and `piper` CLI not on PATH. "

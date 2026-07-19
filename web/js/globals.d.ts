@@ -1,0 +1,91 @@
+/** Shared types for Pocket Pokedex web JS (checkJs / tsc). */
+
+interface PokemonRecord {
+  name: string;
+  displayName: string;
+  types: string[];
+  heightM: number;
+  weightKg: number;
+  abilities: string[];
+  category: string;
+  flavorText: string;
+  evolutionNote: string;
+  dexNumber: number | null;
+}
+
+interface SpeciesDbPayload {
+  version: number;
+  count: number;
+  bySlug: { [slug: string]: PokemonRecord };
+  aliases: { [key: string]: string };
+}
+
+interface MatchCandidate {
+  name: string;
+  score: number;
+}
+
+interface MatchResult {
+  name: string;
+  score: number;
+  accepted: boolean;
+  candidates: MatchCandidate[];
+}
+
+interface DexEntryView {
+  title: string;
+  typesLine: string;
+  category: string;
+  heightWeight: string;
+  narration: string;
+  facts: string[];
+  attribution: string;
+}
+
+interface OcrExtractResult {
+  text: string;
+  rawText: string;
+}
+
+interface PokeApiApi {
+  fetchPokemon(name: string): Promise<PokemonRecord>;
+  loadDb(): Promise<SpeciesDbPayload>;
+  listSpeciesNames(payload: SpeciesDbPayload): string[];
+}
+
+interface PokeMatchApi {
+  matchName(query: string, names: string[], minConfidence?: number): MatchResult;
+  scorePair(query: string, name: string): number;
+}
+
+interface PokeEntryApi {
+  buildEntry(data: PokemonRecord): DexEntryView;
+}
+
+interface PokeOcrApi {
+  extractNameFromImage(
+    img: HTMLImageElement | HTMLCanvasElement,
+    onProgress?: (status: string) => void
+  ): Promise<OcrExtractResult>;
+  MIN_CONF: number;
+}
+
+interface PokeTtsApi {
+  speak(text: string): Promise<string>;
+  stop(): void;
+}
+
+interface Window {
+  PokeApi: PokeApiApi;
+  PokeMatch: PokeMatchApi;
+  PokeEntry: PokeEntryApi;
+  PokeOcr: PokeOcrApi;
+  PokeTts: PokeTtsApi;
+  Tesseract?: any;
+}
+
+declare var PokeApi: PokeApiApi;
+declare var PokeMatch: PokeMatchApi;
+declare var PokeEntry: PokeEntryApi;
+declare var PokeOcr: PokeOcrApi;
+declare var PokeTts: PokeTtsApi;

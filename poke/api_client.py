@@ -67,7 +67,10 @@ class PokeApiClient:
     def _read_json(self, path: Path) -> dict[str, Any] | None:
         if not path.exists():
             return None
-        return json.loads(path.read_text(encoding="utf-8"))
+        data = json.loads(path.read_text(encoding="utf-8"))
+        if not isinstance(data, dict):
+            raise ValueError(f"Expected JSON object in {path}")
+        return data
 
     def _write_json(self, path: Path, data: dict[str, Any]) -> None:
         path.parent.mkdir(parents=True, exist_ok=True)
@@ -94,6 +97,8 @@ class PokeApiClient:
         resp = self._session.get(url, timeout=self.timeout)
         resp.raise_for_status()
         data = resp.json()
+        if not isinstance(data, dict):
+            raise ValueError(f"Expected JSON object from {url}")
         self._write_json(cached, data)
         return data
 
@@ -102,7 +107,10 @@ class PokeApiClient:
             return self._species_db
         if not self.species_db_path.exists():
             return None
-        self._species_db = json.loads(self.species_db_path.read_text(encoding="utf-8"))
+        data = json.loads(self.species_db_path.read_text(encoding="utf-8"))
+        if not isinstance(data, dict):
+            raise ValueError(f"Expected JSON object in {self.species_db_path}")
+        self._species_db = data
         return self._species_db
 
     def _from_species_db(self, name: str) -> PokemonData | None:

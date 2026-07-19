@@ -17,7 +17,10 @@ UA = {"User-Agent": "pocket-pokedex/0.1 (offline warm)"}
 def get(url: str) -> dict:
     req = urllib.request.Request(url, headers=UA)
     with urllib.request.urlopen(req, timeout=30) as r:
-        return json.loads(r.read().decode())
+        data = json.loads(r.read().decode())
+    if not isinstance(data, dict):
+        raise ValueError(f"Expected JSON object from {url}")
+    return data
 
 
 def api_slug(name: str) -> str:

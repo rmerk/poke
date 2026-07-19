@@ -59,6 +59,9 @@ python -m poke --ui --demo --no-tts
 # Allow live PokéAPI only if you opt in
 python -m poke --online --force-name Pikachu --no-tts
 
+# Typecheck + tests
+mypy
+npx -y -p typescript@5.6.3 tsc -p web/jsconfig.json --noEmit
 pytest
 ```
 

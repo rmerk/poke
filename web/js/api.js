@@ -1,7 +1,11 @@
 /** Offline Pokédex DB — no network at runtime. */
 
+/** @type {Promise<SpeciesDbPayload> | null} */
 var dbPromise = null;
 
+/**
+ * @returns {Promise<SpeciesDbPayload>}
+ */
 function loadDb() {
   if (dbPromise) return dbPromise;
   dbPromise = fetch("data/offline/species_db.json")
@@ -11,11 +15,16 @@ function loadDb() {
     })
     .then(function (payload) {
       if (!payload || !payload.bySlug) throw new Error("Invalid species_db.json");
-      return payload;
+      return /** @type {SpeciesDbPayload} */ (payload);
     });
   return dbPromise;
 }
 
+/**
+ * @param {SpeciesDbPayload} payload
+ * @param {string} name
+ * @returns {PokemonRecord | null}
+ */
 function resolveRecord(payload, name) {
   var key = String(name || "").trim();
   if (!key) return null;
@@ -24,6 +33,10 @@ function resolveRecord(payload, name) {
   return payload.bySlug[slug] || null;
 }
 
+/**
+ * @param {string} name
+ * @returns {Promise<PokemonRecord>}
+ */
 function fetchPokemon(name) {
   return loadDb().then(function (payload) {
     var record = resolveRecord(payload, name);
@@ -46,8 +59,14 @@ function fetchPokemon(name) {
   });
 }
 
+/**
+ * @param {SpeciesDbPayload} payload
+ * @returns {string[]}
+ */
 function listSpeciesNames(payload) {
+  /** @type {{ [name: string]: boolean }} */
   var seen = {};
+  /** @type {string[]} */
   var names = [];
   var slug, rec;
   for (slug in payload.bySlug) {
