@@ -82,8 +82,10 @@ def synth_wav(
         )
     elif engine == "espeak":
         bin_name = "espeak-ng" if shutil.which("espeak-ng") else "espeak"
+        # Mid/nasal register (espeak default 50) to match the show's Dexter,
+        # mirroring espeak_pitch in poke/tts.py and DEX_PITCH in web/js/tts.js.
         subprocess.run(
-            [bin_name, "-v", "en-us", "-s", "150", "-p", "30", "-w", str(wav), text],
+            [bin_name, "-v", "en-us", "-s", "150", "-p", "55", "-w", str(wav), text],
             check=True,
         )
     else:
