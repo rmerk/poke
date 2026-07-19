@@ -13,3 +13,6 @@ fixtures/_debug_*.png
 .DS_Store
 data/cache/*
 !data/cache/.gitkeep
+
+# Local voice A/B renders (scripts/audition-voice.py)
+audition/
