@@ -1,0 +1,57 @@
+# Pocket Pokedex configuration
+# Primary device: iPhone A1533 (Safari web app in web/).
+# This YAML configures the optional Mac/Python pipeline only.
+
+display:
+  width: 480
+  height: 320
+  fullscreen: false
+
+camera:
+  # USB webcam index on Mac/bench; Pi Camera often appears as 0 after setup.
+  index: 0
+  # Optional OpenCV device path override (null = use index)
+  device: null
+  # Relative crop of card name band: [x_frac, y_frac, w_frac, h_frac]
+  name_region: [0.08, 0.04, 0.55, 0.14]
+
+ocr:
+  # Minimum fuzzy match score (0–100) to accept without search fallback
+  min_confidence: 72
+  tesseract_cmd: null  # e.g. /opt/homebrew/bin/tesseract
+  psm: 7  # treat as single text line
+
+api:
+  base_url: "https://pokeapi.co/api/v2"
+  cache_dir: "data/cache"
+  timeout_seconds: 15
+
+offline:
+  # Default true — Gen 1 species_db; no live PokéAPI unless --online
+  enabled: true
+  snapshot_dir: "data/offline"
+  species_db: "data/offline/species_db.json"
+
+tts:
+  enabled: true
+  engine: "piper"  # piper | espeak | none
+  # Piper voice model path (download separately); null = try espeak
+  piper_model: null
+  piper_speaker: 0
+  espeak_voice: "en"
+  espeak_rate: 160
+
+gpio:
+  enabled: false
+  # BCM pin numbers — placeholders until hardware is wired
+  pin_back: 17
+  pin_scan: 27
+  pin_speak: 22
+  pin_next: 23
+
+demo:
+  fixture_image: "fixtures/pikachu_card.png"
+  fixture_expected_name: "Pikachu"
+
+paths:
+  species_names: "data/species_names.json"

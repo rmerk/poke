@@ -1,0 +1,33 @@
+[project]
+name = "poke"
+version = "0.1.0"
+description = "Pocket Pokedex card scanner + dex entry narration"
+readme = "README.md"
+requires-python = ">=3.11"
+dependencies = [
+    "opencv-python-headless>=4.8,<5",
+    "Pillow>=10.0",
+    "pygame>=2.5",
+    "PyYAML>=6.0",
+    "rapidfuzz>=3.0",
+    "requests>=2.31",
+]
+
+[project.optional-dependencies]
+ocr = ["pytesseract>=0.3.10"]
+tts = ["piper-tts>=1.2.0"]
+dev = ["pytest>=8.0"]
+
+[project.scripts]
+poke = "poke.__main__:main"
+
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[tool.setuptools.packages.find]
+where = ["."]
+include = ["poke*"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]

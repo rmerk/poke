@@ -1,0 +1,224 @@
+:root {
+  --bg: #1c2024;
+  --panel: #301212;
+  --accent: #dc3030;
+  --text: #f5f0e8;
+  --muted: #b4aaa0;
+  --safe-bottom: env(safe-area-inset-bottom, 0px);
+}
+
+* {
+  box-sizing: border-box;
+  -webkit-tap-highlight-color: transparent;
+}
+
+html,
+body {
+  margin: 0;
+  height: 100%;
+  background: var(--bg);
+  color: var(--text);
+  font-family: "Avenir Next", "Helvetica Neue", Helvetica, Arial, sans-serif;
+  font-size: 15px;
+  overflow: hidden;
+}
+
+#app {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  max-width: 420px;
+  margin: 0 auto;
+}
+
+header {
+  background: var(--panel);
+  border-bottom: 3px solid var(--accent);
+  padding: 10px 12px 8px;
+  flex-shrink: 0;
+}
+
+header h1 {
+  margin: 0;
+  font-size: 22px;
+  letter-spacing: 0.08em;
+  color: var(--accent);
+  font-weight: 800;
+}
+
+header .sub {
+  color: var(--muted);
+  font-size: 11px;
+  margin-top: 2px;
+}
+
+main {
+  flex: 1;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+  padding: 12px;
+  padding-bottom: 8px;
+}
+
+.screen {
+  display: none;
+}
+
+.screen.active {
+  display: block;
+}
+
+h2 {
+  margin: 0 0 8px;
+  font-size: 20px;
+}
+
+.meta {
+  color: var(--accent);
+  font-size: 13px;
+  margin-bottom: 10px;
+}
+
+.narration {
+  line-height: 1.35;
+  margin: 0 0 12px;
+}
+
+.facts {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.facts li {
+  color: var(--muted);
+  font-size: 13px;
+  margin-bottom: 6px;
+  padding-left: 12px;
+  position: relative;
+}
+
+.facts li::before {
+  content: "•";
+  position: absolute;
+  left: 0;
+  color: var(--accent);
+}
+
+.guide {
+  color: var(--muted);
+  font-size: 13px;
+  line-height: 1.4;
+}
+
+.preview-wrap {
+  position: relative;
+  width: 100%;
+  background: #000;
+  border: 1px solid #444;
+  margin: 10px 0;
+  min-height: 160px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+}
+
+.preview-wrap img {
+  max-width: 100%;
+  max-height: 220px;
+  display: block;
+}
+
+.name-guide {
+  position: absolute;
+  left: 8%;
+  top: 4%;
+  width: 55%;
+  height: 14%;
+  border: 2px solid var(--accent);
+  box-shadow: 0 0 0 9999px rgba(0, 0, 0, 0.25);
+  pointer-events: none;
+}
+
+.status {
+  color: var(--muted);
+  font-size: 12px;
+  min-height: 1.2em;
+  margin-top: 6px;
+}
+
+.error {
+  color: var(--accent);
+}
+
+input[type="search"],
+input[type="text"] {
+  width: 100%;
+  padding: 10px;
+  border: 1px solid #555;
+  background: #111;
+  color: var(--text);
+  font-size: 16px; /* avoids iOS zoom */
+  border-radius: 0;
+  margin: 8px 0;
+}
+
+.candidates button {
+  display: block;
+  width: 100%;
+  text-align: left;
+  margin-bottom: 6px;
+  padding: 10px;
+  background: #222;
+  border: 1px solid #444;
+  color: var(--text);
+  font-size: 15px;
+}
+
+footer {
+  flex-shrink: 0;
+  background: var(--panel);
+  padding: 8px 10px calc(8px + var(--safe-bottom));
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 6px;
+}
+
+footer button,
+.actions button {
+  appearance: none;
+  border: 1px solid #662222;
+  background: #401818;
+  color: var(--text);
+  font-size: 13px;
+  font-weight: 700;
+  padding: 12px 4px;
+  min-height: 44px;
+}
+
+footer button:active,
+.actions button:active {
+  background: var(--accent);
+}
+
+.actions {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+  margin-top: 10px;
+}
+
+.hidden-file {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  opacity: 0;
+  overflow: hidden;
+}
+
+.attr {
+  font-size: 10px;
+  color: #786e64;
+  margin-top: 12px;
+}
