@@ -81,7 +81,7 @@ scripts/
   serve-web.sh               Serve web/ over LAN via python http.server (default :8080)
   build-offline-db.py        Rebuild species_db.json from PokéAPI (needs network ONCE)
   build-voice-clips.py       Re-render web/data/audio/ voice clips from the offline DB
-                             (build-time only; piper > festival kal > espeak-ng)
+                             (build-time only; piper > mbrola us2 > festival kal > espeak-ng)
 
 data/offline/species_db.json Bundled Gen 1 DB (Mac copy — mirror of web/ copy)
 data/species_names.json      Species name list (Mac copy)
