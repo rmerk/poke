@@ -41,8 +41,10 @@ from poke.entry import build_entry
 ROOT = Path(__file__).resolve().parent.parent
 DB_PATH = ROOT / "data" / "offline" / "species_db.json"
 DEFAULT_OUT = ROOT / "web" / "data" / "audio"
-MP3_KBPS = "24"
-MP3_RATE_KHZ = "16"
+# Clarity: 24 kbps / 16 kHz sounded muffled (Nyquist ~8 kHz kills crispness).
+# 48 kbps / 22.05 kHz mono is clean for speech at ~2x the (tiny) file size.
+DEFAULT_MP3_KBPS = "48"
+DEFAULT_MP3_RATE_KHZ = "22.05"
 
 
 def tts_text(narration: str) -> str:
@@ -106,11 +108,11 @@ def robotize(
     subprocess.run(args, check=True)
 
 
-def encode_mp3(wav: Path, mp3: Path) -> None:
+def encode_mp3(wav: Path, mp3: Path, kbps: str, rate_khz: str) -> None:
     subprocess.run(
         [
-            "lame", "--quiet", "-m", "m", "-b", MP3_KBPS,
-            "--resample", MP3_RATE_KHZ, str(wav), str(mp3),
+            "lame", "--quiet", "-m", "m", "-b", kbps,
+            "--resample", rate_khz, str(wav), str(mp3),
         ],
         check=True,
     )
@@ -144,9 +146,15 @@ def main() -> None:
                          "your chosen voice reads low, negative to deepen.")
     ap.add_argument("--ring-hz", type=int, default=30,
                     help="electronic ring-mod tone (sox tremolo speed in Hz; "
-                         "0 = off). Higher = buzzier/more robotic.")
-    ap.add_argument("--ring-depth", type=int, default=50,
-                    help="ring-mod depth 0..100 (how strong the electronic edge is)")
+                         "0 = off). Higher = buzzier/more robotic, but fuzzier.")
+    ap.add_argument("--ring-depth", type=int, default=35,
+                    help="ring-mod depth 0..100 — the electronic-edge vs "
+                         "clarity tradeoff. Lower = cleaner.")
+    ap.add_argument("--mp3-kbps", default=DEFAULT_MP3_KBPS,
+                    help="MP3 bitrate; raise for clarity (e.g. 64), lower for size")
+    ap.add_argument("--mp3-rate-khz", default=DEFAULT_MP3_RATE_KHZ,
+                    help="MP3 sample rate in kHz; 22.05 is clear for speech, "
+                         "16 is muffled")
     ap.add_argument("--out-dir", type=Path, default=DEFAULT_OUT)
     ap.add_argument("--only", nargs="*", default=None, help="Limit to these slugs")
     args = ap.parse_args()
@@ -167,7 +175,9 @@ def main() -> None:
     out_dir.mkdir(parents=True, exist_ok=True)
     manifest_path = out_dir / "manifest.json"
     manifest: dict = {"version": 1, "engine": engine_label, "pitchCents": args.pitch_cents,
-                      "ringHz": args.ring_hz, "ringDepth": args.ring_depth, "bySlug": {}}
+                      "ringHz": args.ring_hz, "ringDepth": args.ring_depth,
+                      "mp3Kbps": args.mp3_kbps, "mp3RateKhz": args.mp3_rate_khz,
+                      "bySlug": {}}
     if manifest_path.exists() and args.only:
         manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
 
@@ -188,7 +198,7 @@ def main() -> None:
             else:
                 fx_wav = raw_wav
             mp3 = out_dir / f"{slug}.mp3"
-            encode_mp3(fx_wav, mp3)
+            encode_mp3(fx_wav, mp3, args.mp3_kbps, args.mp3_rate_khz)
             manifest["bySlug"][slug] = {
                 "file": mp3.name,
                 "sha1": hashlib.sha1(narration.encode("utf-8")).hexdigest(),

@@ -11,6 +11,13 @@
 > model (e.g. `en_US-ryan-medium`) is the primary render — closest to the show.
 > Voice-cloning the actual actor stays rejected. Rebuild the 151 clips on a
 > Piper machine and audition (`--only pikachu`) before a full run.
+>
+> **Clarity:** the first renders sounded muffled/fuzzy — that was the MP3
+> encode (24 kbps / 16 kHz, Nyquist ~8 kHz), not just the engine. Defaults
+> are now **48 kbps / 22.05 kHz** mono (tunable via `--mp3-kbps` /
+> `--mp3-rate-khz`), and ring-mod depth is lower by default since that effect
+> trades clarity for the electronic edge. Piper (vs the grainy `mbrola`
+> diphone) is the other half of the clarity fix.
 
 > **Revision (same day):** the user authorized changing the decision lock to
 > get closer to the show. The lock's TTS row now reads: **bundled
