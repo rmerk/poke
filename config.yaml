@@ -40,6 +40,8 @@ tts:
   piper_speaker: 0
   espeak_voice: "en"
   espeak_rate: 160
+  # 0–99, espeak default 50; low pitch = show-Pokedex robotic monotone
+  espeak_pitch: 30
 
 gpio:
   enabled: false

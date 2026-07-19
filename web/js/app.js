@@ -5,6 +5,8 @@
   var speciesNames = [];
   /** @type {DexEntryView | null} */
   var currentEntry = null;
+  /** @type {string | null} */
+  var currentSlug = null;
   /** @type {HTMLImageElement | null} */
   var previewImage = null;
   /** @type {MatchCandidate[]} */
@@ -130,6 +132,7 @@
     setBusy("Looking up " + name + "…", "Offline Pokédex");
     return PokeApi.fetchPokemon(name)
       .then(function (data) {
+        currentSlug = data.name;
         renderEntry(PokeEntry.buildEntry(data));
       })
       .catch(function (/** @type {any} */ err) {
@@ -207,6 +210,7 @@
   function goBack() {
     PokeTts.stop();
     currentEntry = null;
+    currentSlug = null;
     showScreen("idle");
   }
 
@@ -216,7 +220,7 @@
   mustEl("btn-back").onclick = goBack;
   mustEl("btn-speak").onclick = function () {
     if (!currentEntry) return;
-    PokeTts.speak(currentEntry.narration).catch(function (/** @type {any} */ e) {
+    PokeTts.speak(currentEntry.narration, currentSlug || undefined).catch(function (/** @type {any} */ e) {
       setError(String(e.message || e));
     });
   };

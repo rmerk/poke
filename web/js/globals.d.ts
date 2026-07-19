@@ -71,7 +71,7 @@ interface PokeOcrApi {
 }
 
 interface PokeTtsApi {
-  speak(text: string): Promise<string>;
+  speak(text: string, slug?: string): Promise<string>;
   stop(): void;
 }
 

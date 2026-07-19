@@ -38,6 +38,22 @@ def _title(name: str) -> str:
     return name.replace("-", " ").title().replace(" Mr Mime", " Mr. Mime")
 
 
+def record_to_pokemon_data(record: dict[str, Any]) -> PokemonData:
+    """Convert a species_db.json bySlug record into PokemonData."""
+    return PokemonData(
+        name=str(record["name"]),
+        display_name=str(record["displayName"]),
+        types=tuple(record.get("types") or ()),
+        height_m=float(record.get("heightM") or 0),
+        weight_kg=float(record.get("weightKg") or 0),
+        abilities=tuple(record.get("abilities") or ()),
+        category=str(record.get("category") or "Pokémon"),
+        flavor_text=str(record.get("flavorText") or "No Pokédex entry available."),
+        evolution_note=str(record.get("evolutionNote") or "Evolution data unavailable."),
+        dex_number=record.get("dexNumber"),
+    )
+
+
 class PokeApiClient:
     def __init__(self, config: dict[str, Any]) -> None:
         api = config.get("api", {})
@@ -134,18 +150,7 @@ class PokeApiClient:
                     break
         if not record:
             return None
-        return PokemonData(
-            name=str(record["name"]),
-            display_name=str(record["displayName"]),
-            types=tuple(record.get("types") or ()),
-            height_m=float(record.get("heightM") or 0),
-            weight_kg=float(record.get("weightKg") or 0),
-            abilities=tuple(record.get("abilities") or ()),
-            category=str(record.get("category") or "Pokémon"),
-            flavor_text=str(record.get("flavorText") or "No Pokédex entry available."),
-            evolution_note=str(record.get("evolutionNote") or "Evolution data unavailable."),
-            dex_number=record.get("dexNumber"),
-        )
+        return record_to_pokemon_data(record)
 
     def fetch_pokemon(self, name: str) -> PokemonData:
         if self.offline:

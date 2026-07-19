@@ -54,11 +54,13 @@ web/                         PRIMARY offline Safari app
     match.js     → PokeMatch Levenshtein + partial-ratio fuzzy match (iOS 12 friendly)
     api.js       → PokeApi   Loads offline species_db.json, resolves by slug/alias
     entry.js     → PokeEntry Builds the templated show-host narration
-    tts.js       → PokeTts   Web Speech API (speechSynthesis)
+    tts.js       → PokeTts   Bundled voice clips (audio) + speechSynthesis fallback
     globals.d.ts             Shared TS types for checkJs
   jsconfig.json              tsc --checkJs config (strict)
   data/offline/species_db.json   Bundled Gen 1 DB (phone copy)
   data/species_names.json        Species name list (phone copy)
+  data/audio/                    Pre-rendered show-style voice clips (<slug>.mp3
+                                 + manifest.json with narration hashes; phone only)
   vendor/tesseract/          Vendored Tesseract.js + WASM + eng.traineddata (no CDN)
   fixtures/pikachu_card.png  Demo fixture image
 
@@ -78,6 +80,8 @@ poke/                        Secondary Python pipeline (Mac / tests)
 scripts/
   serve-web.sh               Serve web/ over LAN via python http.server (default :8080)
   build-offline-db.py        Rebuild species_db.json from PokéAPI (needs network ONCE)
+  build-voice-clips.py       Re-render web/data/audio/ voice clips from the offline DB
+                             (build-time only; piper > festival kal > espeak-ng)
 
 data/offline/species_db.json Bundled Gen 1 DB (Mac copy — mirror of web/ copy)
 data/species_names.json      Species name list (Mac copy)
@@ -133,6 +137,12 @@ edit `data/species_names.json` then rerun this script — do not edit the DB by 
 - **Narration is templated, not LLM-generated.** `entry.js` / `entry.py` build the
   show-host string from DB fields; keep both in sync. Narration is capped (~520
   chars → truncated at ~500) to keep TTS in a comfortable duration band.
+- **The Pokédex voice is pre-rendered.** `web/data/audio/<slug>.mp3` clips (one
+  robotic show-style voice, built by `scripts/build-voice-clips.py`) are the
+  primary speech path; `speechSynthesis` (tuned robotic profile in `tts.js`) is
+  the fallback only. If narration templates or `species_db.json` change, rerun
+  the script — `tests/test_voice_clips.py` compares manifest narration hashes
+  and fails on stale clips.
 - **Attribution stays in the UI.** Every entry carries a PokéAPI + fan-demo
   attribution line. Don't remove it.
 - **Python types are strict.** mypy runs with `disallow_incomplete_defs`,
@@ -187,7 +197,11 @@ binary is on PATH; CI installs it via the `[ocr]` extra + system package.
 
 **Adding/changing species data:** edit `data/species_names.json` → run
 `scripts/build-offline-db.py` → confirm **both** `species_db.json` copies updated
-→ run `pytest`.
+→ run `scripts/build-voice-clips.py` (clips track the DB) → run `pytest`.
+
+**Changing narration (`entry.js` / `entry.py`):** keep both in sync, then rerun
+`scripts/build-voice-clips.py` so the bundled clips speak the new text
+(`tests/test_voice_clips.py` will fail until you do).
 
 **Changing the pipeline (match/OCR/entry logic):** the change likely needs to be
 made in **both** `web/js/` and `poke/` to keep parity. Update tests in `tests/`.
