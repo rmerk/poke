@@ -1,6 +1,8 @@
 /** Offline OCR via vendored Tesseract.js (no CDN). */
 
 var MIN_CONF = 72;
+/** Soft ceiling for Tesseract on A1533 — timeout opens search, never hangs. */
+var OCR_TIMEOUT_MS = 15000;
 /** @type {Promise<any> | null} */
 var workerPromise = null;
 
@@ -88,18 +90,51 @@ function cleanOcrText(raw) {
 }
 
 /**
+ * @template T
+ * @param {Promise<T>} promise
+ * @param {number} ms
+ * @param {string} [message]
+ * @returns {Promise<T>}
+ */
+function withTimeout(promise, ms, message) {
+  return new Promise(function (resolve, reject) {
+    var settled = false;
+    var timer = setTimeout(function () {
+      if (settled) return;
+      settled = true;
+      reject(new Error(message || "Timed out after " + ms + "ms"));
+    }, ms);
+    promise.then(
+      function (value) {
+        if (settled) return;
+        settled = true;
+        clearTimeout(timer);
+        resolve(value);
+      },
+      function (err) {
+        if (settled) return;
+        settled = true;
+        clearTimeout(timer);
+        reject(err);
+      }
+    );
+  });
+}
+
+/**
  * @param {HTMLImageElement | HTMLCanvasElement} img
  * @param {(status: string) => void} [onProgress]
  * @returns {Promise<OcrExtractResult>}
  */
 function extractNameFromImage(img, onProgress) {
-  return getWorker(onProgress).then(function (worker) {
+  var work = getWorker(onProgress).then(function (worker) {
     var canvas = cropNameRegion(img);
     return worker.recognize(canvas).then(function (/** @type {{ data?: { text?: string } }} */ result) {
       var raw = result && result.data ? result.data.text : "";
       return { text: cleanOcrText(raw || ""), rawText: raw || "" };
     });
   });
+  return withTimeout(work, OCR_TIMEOUT_MS, "OCR timed out — try search");
 }
 
 window.PokeOcr = {

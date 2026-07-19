@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Rebuild web/data/offline/species_db.json from PokéAPI (one-time; needs network)."""
+"""Rebuild Gen 1 species_db.json for web/ and data/ from PokéAPI (needs network)."""
 
 from __future__ import annotations
 
@@ -8,9 +8,10 @@ import time
 import urllib.request
 from pathlib import Path
 
+from poke.offline_db import default_species_db_paths, write_species_db
+
 ROOT = Path(__file__).resolve().parent.parent
 NAMES_PATH = ROOT / "data" / "species_names.json"
-OUT_PATH = ROOT / "web" / "data" / "offline" / "species_db.json"
 UA = {"User-Agent": "pocket-pokedex/0.1 (offline warm)"}
 
 
@@ -95,7 +96,9 @@ def main() -> None:
         if evo:
             walk_evo(evo.get("chain") or {}, evo_names)
         if len(evo_names) <= 1:
-            evo_note = f"{evo_names[0]} does not evolve." if evo_names else "Evolution data unavailable."
+            evo_note = (
+                f"{evo_names[0]} does not evolve." if evo_names else "Evolution data unavailable."
+            )
         else:
             evo_note = "Evolution: " + " → ".join(evo_names) + "."
 
@@ -105,7 +108,11 @@ def main() -> None:
                 dex = entry.get("entry_number")
                 break
 
-        display = name if "Nidoran" in name or name in ("Farfetch'd", "Mr. Mime") else title(pokemon["name"])
+        display = (
+            name
+            if "Nidoran" in name or name in ("Farfetch'd", "Mr. Mime")
+            else title(pokemon["name"])
+        )
         record = {
             "name": slug,
             "displayName": display,
@@ -125,10 +132,11 @@ def main() -> None:
         print(f"[{i + 1}/{len(names)}] {display}")
         time.sleep(0.05)
 
-    OUT_PATH.parent.mkdir(parents=True, exist_ok=True)
     payload = {"version": 1, "count": len(by_slug), "bySlug": by_slug, "aliases": aliases}
-    OUT_PATH.write_text(json.dumps(payload, separators=(",", ":")), encoding="utf-8")
-    print(f"wrote {OUT_PATH} ({OUT_PATH.stat().st_size} bytes, {len(by_slug)} species)")
+    paths = default_species_db_paths(ROOT)
+    write_species_db(payload, paths)
+    for path in paths:
+        print(f"wrote {path} ({path.stat().st_size} bytes, {len(by_slug)} species)")
 
 
 if __name__ == "__main__":

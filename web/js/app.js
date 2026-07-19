@@ -9,6 +9,7 @@
   var previewImage = null;
   /** @type {MatchCandidate[]} */
   var lastCandidates = [];
+  var DEMO_FORCE_NAME = "Pikachu";
 
   /**
    * @param {string} id
@@ -187,15 +188,15 @@
   }
 
   function runDemo() {
-    setBusy("Demo…", "Loading fixture card for OCR");
+    // Risk mitigation: demo fixture skips OCR when forced name.
+    setBusy("Demo…", "Fixture + forced " + DEMO_FORCE_NAME + " (OCR skipped)");
     var img = new Image();
     img.onload = function () {
       mustImg("preview-img").src = img.src;
       previewImage = mustImg("preview-img");
-      showScreen("preview");
       mustEl("preview-status").textContent =
-        "Fixture loaded. Running offline OCR → match…";
-      identifyImage(previewImage);
+        "Fixture loaded. Skipping OCR — forced name " + DEMO_FORCE_NAME + ".";
+      lookupName(DEMO_FORCE_NAME);
     };
     img.onerror = function () {
       setError("Could not load fixtures/pikachu_card.png");

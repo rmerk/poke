@@ -24,7 +24,7 @@ Pages: Safari → the live URL (HTTPS). Runtime still uses only bundled Gen 1 da
 |---------|--------|
 | **Scan** | Camera / photo of the card name band |
 | **Identify** | Local Tesseract.js → fuzzy match → offline entry |
-| **Demo Pikachu** | Loads fixture → **OCR + match** → entry (offline) |
+| **Demo Pikachu** | Loads fixture → **forced Pikachu** (skips OCR) → entry |
 | **Search** | Type a Gen 1 name |
 | **Speak** | On-device `speechSynthesis` |
 
@@ -38,7 +38,8 @@ Low-confidence OCR opens search — never a silent wrong ID.
 | Tesseract.js + WASM + eng data | `web/vendor/tesseract/` |
 | Fixture card | `web/fixtures/pikachu_card.png` |
 
-Rebuild DB (needs network **once**): `python3 scripts/build-offline-db.py`
+Rebuild DB (needs network **once**): `python3 scripts/build-offline-db.py`  
+(writes both `web/data/offline/species_db.json` and `data/offline/species_db.json`)
 
 ---
 
