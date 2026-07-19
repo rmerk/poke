@@ -92,7 +92,7 @@ Sources consulted: [PokéAPI fair use](https://pokeapi.co/docs/v2), Apple device
 | Piper / espeak in Python | 4 | 3 | 5 | N/A on phone |
 | Voice-cloning the show's actor | 5 | 5 | 1–5 | 1 | 
 
-**Pick:** Pre-rendered clips as primary — narration is templated and deterministic, so every species' line is known at build time; `scripts/build-voice-clips.py` renders all of them once (Piper > espeak-ng+mbrola us2 > festival kal_diphone > espeak-ng, plus sox pitch/normalize) and the phone just plays MP3s. `speechSynthesis` (tuned robotic profile, prefers the Fred voice) stays as fallback for missing clips. Cloning the actual voice actor's voice is rejected — not feasible offline and imitating a real person's voice is out of scope for a fan demo. Python Piper/espeak remains for Mac CLI demos only.
+**Pick:** Pre-rendered clips as primary — narration is templated and deterministic, so every species' line is known at build time; `scripts/build-voice-clips.py` renders all of them once (**Piper** with a flat US male model is the primary/closest render, then espeak-ng+mbrola us2 > festival kal_diphone > espeak-ng) and the phone just plays MP3s. The clips are shaped toward the show's Dexter voice — mid/nasal register (neutral pitch, not deepened) plus a light **ring-modulator** electronic tone via sox — then loudness-normalized. `speechSynthesis` (tuned robotic profile, prefers the Fred voice, mid/nasal prosody) stays as fallback for missing clips. Cloning the actual voice actor's voice is rejected — not feasible offline and imitating a real person's voice is out of scope for a fan demo. Python Piper/espeak remains for Mac CLI demos only.
 
 ---
 
@@ -176,7 +176,7 @@ Subsequent phases follow these unless a documented change is needed:
 | Card ID approach | Tesseract.js OCR → fuzzy match → manual search |
 | Data source + cache | **Bundled offline Gen 1 DB** (`web/data/offline/species_db.json`); no live PokéAPI at runtime |
 | Narration | Templated show-style (no LLM in MVP) |
-| TTS | **Bundled pre-rendered show-style clips** (`web/data/audio/`, rebuilt via `scripts/build-voice-clips.py`); `speechSynthesis` (robotic profile) as fallback |
+| TTS | **Bundled pre-rendered show-style clips** (`web/data/audio/`, rebuilt via `scripts/build-voice-clips.py`; Piper-primary, mid/nasal + ring-mod shaping toward the show's Dexter voice); `speechSynthesis` (robotic profile) as fallback |
 | UI runtime | **Static web app in Safari** (`web/`); Python retained for Mac tests only |
 | Power | **iPhone battery** |
 | Network | **Offline required** — vendored OCR + local species DB; LAN-only serve OK |

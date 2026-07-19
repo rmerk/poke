@@ -21,9 +21,9 @@ def speak_espeak(text: str, config: dict[str, Any]) -> None:
     tts = config.get("tts", {})
     voice = tts.get("espeak_voice", "en")
     rate = int(tts.get("espeak_rate", 160))
-    # Low pitch (espeak default is 50) for the show-Pokedex robotic monotone,
-    # mirroring DEX_PITCH in web/js/tts.js.
-    pitch = int(tts.get("espeak_pitch", 30))
+    # Mid/nasal register for the show-Pokedex ("Dexter") monotone — not deep.
+    # espeak default is 50; mirrors the raised DEX_PITCH in web/js/tts.js.
+    pitch = int(tts.get("espeak_pitch", 58))
     bin_name = "espeak-ng" if _which("espeak-ng") else "espeak"
     if not _which(bin_name):
         raise TtsError("espeak-ng / espeak not found on PATH.")

@@ -40,8 +40,9 @@ tts:
   piper_speaker: 0
   espeak_voice: "en"
   espeak_rate: 160
-  # 0–99, espeak default 50; low pitch = show-Pokedex robotic monotone
-  espeak_pitch: 30
+  # 0–99, espeak default 50; mid/nasal register = show-Pokedex ("Dexter"),
+  # not a deep robot. Mirrors DEX_PITCH in web/js/tts.js.
+  espeak_pitch: 58
 
 gpio:
   enabled: false

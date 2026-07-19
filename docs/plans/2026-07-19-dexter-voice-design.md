@@ -1,5 +1,17 @@
 # Dexter-style Pokédex voice — design
 
+> **Revision 2 (retune to the show's register):** the earlier recipe pushed the
+> voice *deep* (`--pitch-cents -100`, fallback `pitch 0.5`) — a menacing low
+> robot, away from the show. Show-Dexter is **mid/nasal, clipped, with an
+> electronic ring-modulator edge**, not deep. So: (a) `build-voice-clips.py`
+> pitch shift now defaults to neutral (`0`) plus a tunable ring-mod tone
+> (`--ring-hz` / `--ring-depth`, sox amplitude modulation); (b) the
+> `speechSynthesis` fallback pitch is raised (`DEX_PITCH 0.5 → 1.15`); (c) the
+> espeak fallback pitch is raised (`30 → 58`). **Piper** with a flat US male
+> model (e.g. `en_US-ryan-medium`) is the primary render — closest to the show.
+> Voice-cloning the actual actor stays rejected. Rebuild the 151 clips on a
+> Piper machine and audition (`--only pikachu`) before a full run.
+
 > **Revision (same day):** the user authorized changing the decision lock to
 > get closer to the show. The lock's TTS row now reads: **bundled
 > pre-rendered clips** (`web/data/audio/`, built by

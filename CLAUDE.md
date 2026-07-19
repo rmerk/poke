@@ -81,7 +81,9 @@ scripts/
   serve-web.sh               Serve web/ over LAN via python http.server (default :8080)
   build-offline-db.py        Rebuild species_db.json from PokéAPI (needs network ONCE)
   build-voice-clips.py       Re-render web/data/audio/ voice clips from the offline DB
-                             (build-time only; piper > mbrola us2 > festival kal > espeak-ng)
+                             (build-time only; piper > mbrola us2 > festival kal > espeak-ng;
+                             sox shapes toward the show's Dexter voice — mid/nasal
+                             register + ring-mod tone, not a deep robot)
 
 data/offline/species_db.json Bundled Gen 1 DB (Mac copy — mirror of web/ copy)
 data/species_names.json      Species name list (Mac copy)
@@ -138,7 +140,9 @@ edit `data/species_names.json` then rerun this script — do not edit the DB by 
   show-host string from DB fields; keep both in sync. Narration is capped (~520
   chars → truncated at ~500) to keep TTS in a comfortable duration band.
 - **The Pokédex voice is pre-rendered.** `web/data/audio/<slug>.mp3` clips (one
-  robotic show-style voice, built by `scripts/build-voice-clips.py`) are the
+  robotic show-style voice shaped toward the show's "Dexter" — mid/nasal, not
+  deep, with a ring-mod electronic edge; built by
+  `scripts/build-voice-clips.py`) are the
   primary speech path; `speechSynthesis` (tuned robotic profile in `tts.js`) is
   the fallback only. If narration templates or `species_db.json` change, rerun
   the script — `tests/test_voice_clips.py` compares manifest narration hashes

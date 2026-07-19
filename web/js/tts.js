@@ -4,12 +4,15 @@
  *    device, played fully offline via <audio>.
  * 2. Web Speech API fallback when a clip is missing or fails: the most
  *    robotic system voice available (Fred, the classic MacInTalk robot
- *    voice iOS ships) with flattened low-pitch prosody. */
+ *    voice iOS ships) with the show's mid/nasal, clipped prosody. */
 
 /** Ranked by how close each voice gets to the show's robotic register. */
 var DEX_VOICE_PREFS = ["fred", "alex", "aaron", "daniel"];
+/** Clipped, measured delivery. */
 var DEX_RATE = 0.95;
-var DEX_PITCH = 0.5;
+/** Mid/slightly-high nasal register (1.0 = default) — Dexter is NOT deep;
+ * the old 0.5 read as a menacing low robot, away from the show. */
+var DEX_PITCH = 1.15;
 
 /** @type {HTMLAudioElement | null} */
 var currentAudio = null;

@@ -7,12 +7,22 @@ template (poke/entry.py / web/js/entry.js) or species_db.json changes; the
 manifest narration hashes let tests/test_voice_clips.py catch stale clips.
 
 Engines (most show-like first):
-  piper     natural deadpan read — needs --piper-model (download separately)
+  piper     natural deadpan read — needs --piper-model (download separately).
+            The closest match to the show's Pokédex ("Dexter"); pick a flat
+            US male model such as en_US-ryan-medium or en_US-lessac-medium.
   mbrola    espeak-ng frontend + mbrola US male diphone voice (apt: mbrola
             mbrola-us2) — smoother than festival; default when available
   festival  kal_diphone, the classic robotic male voice (apt: festival
             festvox-kallpc16k)
   espeak    espeak-ng, most synthetic-sounding fallback
+
+Show-voice shaping (sox): Dexter is a mid/nasal, clipped robotic read with an
+electronic "ring-modulator" edge — NOT a deep menacing robot. So the default
+pitch shift is neutral (0), and a light amplitude ring-mod (--ring-hz) adds the
+electronic tone. Tune to taste, then rebuild all 151 clips. Audition one line
+fast before committing a full run, e.g.:
+
+  python3 scripts/build-voice-clips.py --piper-model VOICE.onnx --only pikachu
 """
 
 from __future__ import annotations
@@ -78,11 +88,20 @@ def synth_wav(
         raise SystemExit(f"Unknown engine: {engine}")
 
 
-def robotize(wav_in: Path, wav_out: Path, pitch_cents: int) -> None:
-    """Deepen slightly toward the show's register and normalize loudness."""
+def robotize(
+    wav_in: Path, wav_out: Path, pitch_cents: int, ring_hz: int, ring_depth: int
+) -> None:
+    """Shape toward the show's Dexter voice: optional pitch nudge, an electronic
+    ring-modulator edge (amplitude modulation — the classic computer-voice
+    timbre), then normalize loudness. Default pitch is neutral; Dexter is
+    mid/nasal, not deep."""
     args = ["sox", str(wav_in), str(wav_out)]
     if pitch_cents:
         args += ["pitch", str(pitch_cents)]
+    if ring_hz:
+        # High-frequency tremolo ≈ ring modulation: adds the buzzy electronic
+        # sidebands that read as "robotic Pokédex" without killing intelligibility.
+        args += ["tremolo", str(ring_hz), str(ring_depth)]
     args += ["norm", "-3"]
     subprocess.run(args, check=True)
 
@@ -119,8 +138,15 @@ def main() -> None:
     ap.add_argument("--piper-model", default=None, help="Path to a Piper .onnx voice model")
     ap.add_argument("--mbrola-voice", default="us2",
                     help="mbrola voice db name (us1/us2/us3)")
-    ap.add_argument("--pitch-cents", type=int, default=-100,
-                    help="sox pitch shift toward the show's low register (0 = off)")
+    ap.add_argument("--pitch-cents", type=int, default=0,
+                    help="sox pitch shift in cents (0 = the model's natural "
+                         "register). Dexter is mid/nasal; nudge +50..+100 if "
+                         "your chosen voice reads low, negative to deepen.")
+    ap.add_argument("--ring-hz", type=int, default=30,
+                    help="electronic ring-mod tone (sox tremolo speed in Hz; "
+                         "0 = off). Higher = buzzier/more robotic.")
+    ap.add_argument("--ring-depth", type=int, default=50,
+                    help="ring-mod depth 0..100 (how strong the electronic edge is)")
     ap.add_argument("--out-dir", type=Path, default=DEFAULT_OUT)
     ap.add_argument("--only", nargs="*", default=None, help="Limit to these slugs")
     args = ap.parse_args()
@@ -141,7 +167,7 @@ def main() -> None:
     out_dir.mkdir(parents=True, exist_ok=True)
     manifest_path = out_dir / "manifest.json"
     manifest: dict = {"version": 1, "engine": engine_label, "pitchCents": args.pitch_cents,
-                      "bySlug": {}}
+                      "ringHz": args.ring_hz, "ringDepth": args.ring_depth, "bySlug": {}}
     if manifest_path.exists() and args.only:
         manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
 
@@ -157,7 +183,8 @@ def main() -> None:
             synth_wav(tts_text(narration), raw_wav, engine, args.piper_model,
                       args.mbrola_voice)
             if has_sox:
-                robotize(raw_wav, fx_wav, args.pitch_cents)
+                robotize(raw_wav, fx_wav, args.pitch_cents, args.ring_hz,
+                         args.ring_depth)
             else:
                 fx_wav = raw_wav
             mp3 = out_dir / f"{slug}.mp3"
