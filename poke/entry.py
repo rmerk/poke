@@ -10,6 +10,7 @@ from poke.api_client import PokemonData
 @dataclass(frozen=True)
 class DexEntry:
     title: str
+    dex_number: int | None
     types_line: str
     category: str
     height_weight: str
@@ -46,6 +47,7 @@ def build_entry(data: PokemonData) -> DexEntry:
 
     return DexEntry(
         title=data.display_name,
+        dex_number=data.dex_number,
         types_line=types_line,
         category=data.category,
         height_weight=hw,

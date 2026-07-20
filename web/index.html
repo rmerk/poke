@@ -9,78 +9,112 @@
     <meta name="apple-mobile-web-app-capable" content="yes" />
     <meta name="apple-mobile-web-app-status-bar-style" content="black" />
     <meta name="apple-mobile-web-app-title" content="Pokédex" />
+    <meta name="theme-color" content="#c0202a" />
     <title>Pocket Pokedex</title>
     <link rel="stylesheet" href="css/app.css" />
   </head>
   <body>
     <div id="app">
       <header>
-        <h1>POKÉDEX</h1>
-        <div class="sub">iPhone A1533 · offline · National Pokédex</div>
+        <div class="lens" aria-hidden="true"><span class="lens-glint"></span></div>
+        <div class="leds" aria-hidden="true">
+          <i class="led led-red"></i><i class="led led-amber"></i><i class="led led-green"></i>
+        </div>
+        <div class="brand">
+          <h1>POKÉDEX</h1>
+          <div class="sub">National · offline</div>
+        </div>
       </header>
 
       <main>
         <section id="screen-idle" class="screen active">
-          <h2>Scan card.</h2>
-          <p class="guide">
-            Place a card in the tray, tap <strong>Scan</strong>, and photograph the name band.
-            Works fully <strong>offline</strong> (bundled species data + on-device OCR/TTS).
-            Low-confidence reads open search — never a silent wrong ID.
-          </p>
+          <div class="hero">
+            <div class="scan-target" aria-hidden="true">
+              <span class="ring"></span>
+              <span class="pokeball"><span class="pokeball-btn"></span></span>
+              <span class="corner tl"></span><span class="corner tr"></span>
+              <span class="corner bl"></span><span class="corner br"></span>
+            </div>
+            <h2>Ready to scan.</h2>
+            <p class="guide">
+              Drop a card in the tray and tap <strong>Scan</strong> to read the name band —
+              or look one up by name. Fully <strong>offline</strong>; a low-confidence read
+              always opens search, never a wrong guess.
+            </p>
+          </div>
           <div class="actions">
-            <button type="button" id="btn-demo">Demo Pikachu</button>
-            <button type="button" id="btn-search-idle">Search</button>
+            <button type="button" id="btn-demo" class="btn-ghost">Demo Pikachu</button>
+            <button type="button" id="btn-search-idle" class="btn-ghost">Search by name</button>
           </div>
           <p class="attr">Personal non-commercial fan demo. Not affiliated with Nintendo / TPC / Game Freak.</p>
         </section>
 
         <section id="screen-busy" class="screen">
-          <h2 id="busy-title">Working…</h2>
-          <p class="status" id="busy-status"></p>
+          <div class="busy-wrap">
+            <div class="scanner" aria-hidden="true">
+              <span class="scan-line"></span>
+              <span class="pokeball spin"><span class="pokeball-btn"></span></span>
+            </div>
+            <h2 id="busy-title">Working…</h2>
+            <p class="status" id="busy-status"></p>
+          </div>
         </section>
 
         <section id="screen-preview" class="screen">
           <h2>Card photo</h2>
           <div class="preview-wrap">
             <img id="preview-img" alt="Card preview" />
-            <div class="name-guide" aria-hidden="true"></div>
+            <div class="name-guide" aria-hidden="true"><span class="tag">NAME</span></div>
           </div>
           <p class="status" id="preview-status">Align the name inside the red box, then Identify.</p>
           <div class="actions">
-            <button type="button" id="btn-identify">Identify</button>
-            <button type="button" id="btn-reshoot">Reshoot</button>
+            <button type="button" id="btn-identify" class="btn-primary">Identify</button>
+            <button type="button" id="btn-reshoot" class="btn-ghost">Reshoot</button>
           </div>
         </section>
 
         <section id="screen-search" class="screen">
           <h2>Search</h2>
-          <p class="status" id="search-status">Type a Pokémon name.</p>
           <input id="search-input" type="search" placeholder="e.g. Pikachu" autocomplete="off" autocorrect="off" />
+          <p class="status" id="search-status">Type a Pokémon name.</p>
           <div class="candidates" id="candidates"></div>
           <div class="actions">
-            <button type="button" id="btn-search-go">Look up</button>
+            <button type="button" id="btn-search-go" class="btn-primary">Look up</button>
           </div>
         </section>
 
         <section id="screen-entry" class="screen">
+          <div class="portrait" id="entry-portrait">
+            <span class="portrait-glow" aria-hidden="true"></span>
+            <span class="pokeball ghost" aria-hidden="true"><span class="pokeball-btn"></span></span>
+            <span class="dexno" id="entry-dexno">No. 000</span>
+          </div>
           <h2 id="entry-title">—</h2>
+          <div class="badges" id="entry-badges"></div>
           <p class="meta" id="entry-meta"></p>
-          <p class="narration" id="entry-narration"></p>
+          <div class="stats" id="entry-stats"></div>
+          <div class="readout">
+            <div class="readout-label">POKÉDEX ENTRY</div>
+            <p class="narration" id="entry-narration"></p>
+          </div>
           <ul class="facts" id="entry-facts"></ul>
           <p class="attr" id="entry-attr"></p>
         </section>
 
         <section id="screen-error" class="screen">
-          <h2>Error</h2>
-          <p class="error" id="error-message"></p>
+          <div class="error-card">
+            <div class="error-mark" aria-hidden="true">!</div>
+            <h2>Something went wrong</h2>
+            <p class="error" id="error-message"></p>
+          </div>
         </section>
       </main>
 
       <footer>
-        <button type="button" id="btn-back">Back</button>
-        <button type="button" id="btn-scan">Scan</button>
-        <button type="button" id="btn-speak">Speak</button>
-        <button type="button" id="btn-next">Next</button>
+        <button type="button" id="btn-back" class="fbtn"><span class="ico">‹</span><span class="lbl">Back</span></button>
+        <button type="button" id="btn-scan" class="fbtn fbtn-scan"><span class="ico">◎</span><span class="lbl">Scan</span></button>
+        <button type="button" id="btn-speak" class="fbtn fbtn-speak"><span class="ico">►</span><span class="lbl">Speak</span></button>
+        <button type="button" id="btn-next" class="fbtn"><span class="ico">›</span><span class="lbl">Next</span></button>
       </footer>
     </div>
 

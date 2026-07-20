@@ -36,6 +36,7 @@ interface MatchResult {
 
 interface DexEntryView {
   title: string;
+  dexNumber: number | null;
   typesLine: string;
   category: string;
   heightWeight: string;

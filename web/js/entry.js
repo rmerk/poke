@@ -35,6 +35,7 @@ function buildEntry(data) {
 
   return {
     title: data.displayName,
+    dexNumber: data.dexNumber,
     typesLine: typesLine,
     category: data.category,
     heightWeight: hw,

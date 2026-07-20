@@ -88,6 +88,52 @@
     throw new Error("Unhandled variant: " + JSON.stringify(x));
   }
 
+  // ------------------------------------------------------------- type theming
+
+  /** Canonical type → accent color. Keyed by lowercased type name. */
+  /** @type {{ [type: string]: string }} */
+  var TYPE_COLORS = {
+    normal: "#9099a1",
+    fire: "#f0803c",
+    water: "#4d90d5",
+    electric: "#f4c430",
+    grass: "#63bb5b",
+    ice: "#74cec0",
+    fighting: "#ce4069",
+    poison: "#ab6ac8",
+    ground: "#d97845",
+    flying: "#8fa8dd",
+    psychic: "#f66f71",
+    bug: "#90c12c",
+    rock: "#c7b78b",
+    ghost: "#5269ac",
+    dragon: "#0a6dc4",
+    dark: "#5a5366",
+    steel: "#5a8ea1",
+    fairy: "#ec8fe6",
+  };
+
+  /**
+   * Pick readable ink (dark vs light) for a solid swatch, via luminance.
+   * @param {string} hex  "#rrggbb"
+   * @returns {string}
+   */
+  function inkOn(hex) {
+    var r = parseInt(hex.slice(1, 3), 16);
+    var g = parseInt(hex.slice(3, 5), 16);
+    var b = parseInt(hex.slice(5, 7), 16);
+    var lum = (0.299 * r + 0.587 * g + 0.114 * b) / 255;
+    return lum > 0.62 ? "#1b1f27" : "#ffffff";
+  }
+
+  /**
+   * @param {string} type
+   * @returns {string}
+   */
+  function typeColor(type) {
+    return TYPE_COLORS[String(type || "").toLowerCase()] || "#9099a1";
+  }
+
   // ------------------------------------------------------------- render
 
   /**
@@ -101,7 +147,18 @@
       (function (c, idx) {
         var btn = document.createElement("button");
         btn.type = "button";
-        btn.textContent = idx + 1 + ". " + c.name + " (" + Math.round(c.score) + ")";
+        var rank = document.createElement("span");
+        rank.className = "rank";
+        rank.textContent = String(idx + 1);
+        var name = document.createElement("span");
+        name.className = "cname";
+        name.textContent = c.name;
+        var score = document.createElement("span");
+        score.className = "cscore";
+        score.textContent = "match " + Math.round(c.score);
+        btn.appendChild(rank);
+        btn.appendChild(name);
+        btn.appendChild(score);
         btn.onclick = function () {
           PokeMachine.dispatch({ type: "CANDIDATE_PICKED", index: idx });
         };
@@ -111,19 +168,81 @@
   }
 
   /**
+   * @param {string} label
+   * @param {string} value
+   * @returns {HTMLElement}
+   */
+  function statChip(label, value) {
+    var cell = document.createElement("div");
+    cell.className = "stat";
+    var k = document.createElement("div");
+    k.className = "k";
+    k.textContent = label;
+    var v = document.createElement("div");
+    v.className = "v";
+    v.textContent = value;
+    cell.appendChild(k);
+    cell.appendChild(v);
+    return cell;
+  }
+
+  /**
+   * @param {number | null} n
+   * @returns {string}
+   */
+  function dexLabel(n) {
+    if (!n) return "No. —";
+    var s = String(n);
+    while (s.length < 3) s = "0" + s;
+    return "No. " + s;
+  }
+
+  /**
    * @param {DexEntryView} entry
    * @returns {void}
    */
   function renderEntry(entry) {
+    var section = mustEl("screen-entry");
+    var types = entry.typesLine.split(" / ");
+    var primary = typeColor(types[0]);
+    section.style.setProperty("--accent", primary);
+
     mustEl("entry-title").textContent = entry.title;
-    mustEl("entry-meta").textContent =
-      entry.typesLine + " · " + entry.category + " · " + entry.heightWeight;
+    mustEl("entry-dexno").textContent = dexLabel(entry.dexNumber);
+
+    // Type badges — the visual identity of the scanned species.
+    var badges = mustEl("entry-badges");
+    badges.innerHTML = "";
+    for (var t = 0; t < types.length; t++) {
+      var color = typeColor(types[t]);
+      var b = document.createElement("span");
+      b.className = "badge";
+      b.style.background = color;
+      b.style.color = inkOn(color);
+      b.textContent = types[t];
+      badges.appendChild(b);
+    }
+
+    mustEl("entry-meta").textContent = "The " + entry.category;
+
+    // Height · Weight → two stat chips.
+    var stats = mustEl("entry-stats");
+    stats.innerHTML = "";
+    var hw = entry.heightWeight.split(" · ");
+    stats.appendChild(statChip("Height", hw[0] || "—"));
+    stats.appendChild(statChip("Weight", hw[1] || "—"));
+
     mustEl("entry-narration").textContent = entry.narration;
+
+    // Facts already surfaced above (type/category/height) are dropped so the
+    // list reads as extra data, not a repeat of the header.
     var ul = mustEl("entry-facts");
     ul.innerHTML = "";
     for (var i = 0; i < entry.facts.length; i++) {
+      var f = entry.facts[i];
+      if (/^(Type|Category|Height)\b/.test(f)) continue;
       var li = document.createElement("li");
-      li.textContent = entry.facts[i];
+      li.textContent = f;
       ul.appendChild(li);
     }
     mustEl("entry-attr").textContent = entry.attribution;
