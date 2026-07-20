@@ -6,10 +6,21 @@ var OCR_TIMEOUT_MS = 15000;
 /** @type {Promise<any> | null} */
 var workerPromise = null;
 
+/**
+ * Tesseract spawns its worker from a blob: URL, so relative paths resolve
+ * against the blob and fail with "invalid URL" inside importScripts. Every
+ * path handed to Tesseract must be absolute.
+ * @param {string} p
+ * @returns {string}
+ */
+function abs(p) {
+  return new URL(p, window.location.href).href;
+}
+
 var PATHS = {
-  workerPath: "vendor/tesseract/worker.min.js",
-  langPath: "vendor/tesseract/lang",
-  corePath: "vendor/tesseract/tesseract-core.wasm.js",
+  workerPath: abs("vendor/tesseract/worker.min.js"),
+  langPath: abs("vendor/tesseract/lang"),
+  corePath: abs("vendor/tesseract/tesseract-core.wasm.js"),
 };
 
 /**
@@ -41,17 +52,37 @@ function loadScript(src) {
 function getWorker(onProgress) {
   if (workerPromise) return workerPromise;
   workerPromise = loadScript("vendor/tesseract/tesseract.min.js").then(function (Tesseract) {
-    return Tesseract.createWorker("eng", 1, {
+    // Vendored Tesseract.js is v4: createWorker takes ONE options argument, and
+    // the language must be loaded + initialized explicitly. The v5 signature
+    // (createWorker(lang, oem, opts)) silently drops these paths and falls back
+    // to the CDN defaults — which cannot work offline.
+    return Tesseract.createWorker({
       workerPath: PATHS.workerPath,
       langPath: PATHS.langPath,
       corePath: PATHS.corePath,
+      // Bundled eng.traineddata is uncompressed; v4 expects .traineddata.gz otherwise.
+      gzip: false,
       logger: function (/** @type {{ status?: string, progress?: number }} */ m) {
         if (onProgress && m && m.status) {
           var pct = m.progress != null ? " " + Math.round(m.progress * 100) + "%" : "";
           onProgress(m.status + pct);
         }
       },
+    }).then(function (/** @type {any} */ worker) {
+      return worker
+        .loadLanguage("eng")
+        .then(function () {
+          return worker.initialize("eng");
+        })
+        .then(function () {
+          return worker;
+        });
     });
+  });
+  // Don't cache a rejected worker — otherwise one failed init poisons every
+  // later scan for the life of the page.
+  workerPromise.catch(function () {
+    workerPromise = null;
   });
   return workerPromise;
 }
