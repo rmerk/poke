@@ -20,6 +20,7 @@ from __future__ import annotations
 import argparse
 import hashlib
 import json
+import re
 import shutil
 import subprocess
 import tempfile
@@ -35,12 +36,48 @@ MP3_KBPS = "24"
 MP3_RATE_KHZ = "16"
 
 
+# espeak/piper spell all-caps tokens letter by letter, and PokeAPI flavor text
+# keeps the old all-caps convention ("POKéMON", "MAGIKARP", "THUNDER WAVE").
+_ALLCAPS_RE = re.compile(r"\b([A-Z]{2,})('s|s)?\b")
+# "National No. 25" must read "Number", but only when a figure follows.
+_NUMBER_ABBR_RE = re.compile(r"\bNo\.\s*(?=\d)")
+# Any casing of Poke/Pokemon, with or without the accent.
+_POKEMON_RE = re.compile(r"\bPOK[EÉée]MON\b", re.IGNORECASE)
+_POKE_RE = re.compile(r"\bPOK[Éé]\b", re.IGNORECASE)
+# Title-casing this one yields "Ko"; it means "knock out".
+_KO_RE = re.compile(r"\bKO\b")
+
+
 def tts_text(narration: str) -> str:
     """Normalize narration for the synthesizers (they read ASCII best)."""
     s = narration.replace("→", " to ").replace("…", ".")
     s = s.replace("♀", " female").replace("♂", " male")
+    # Before the accent is folded away, so "POKéMON" is caught as one token.
+    s = _POKEMON_RE.sub("Pokemon", s)
+    s = _POKE_RE.sub("Poke", s)
+    s = _KO_RE.sub("knock out", s)
+    s = _ALLCAPS_RE.sub(lambda m: m.group(1).title() + (m.group(2) or ""), s)
+    s = _NUMBER_ABBR_RE.sub("Number ", s)
     s = s.replace("é", "e").replace("È", "E").replace("’", "'")
     return " ".join(s.split())
+
+
+def check_piper_runnable() -> None:
+    """A piper built for the wrong arch dies with SIGABRT mid-render; fail early
+    with something actionable instead (macOS ships both x86_64 and arm64 builds,
+    and an x86_64 piper can't load Homebrew's arm64 libespeak-ng)."""
+    found = shutil.which("piper")
+    if not found:
+        raise SystemExit("piper not found on PATH")
+    probe = subprocess.run(["piper", "--help"], capture_output=True)
+    if probe.returncode != 0:
+        detail = probe.stderr.decode("utf-8", "replace").strip().splitlines()
+        raise SystemExit(
+            f"piper at {found} is not runnable:\n"
+            + "\n".join(detail[:3])
+            + "\nInstall a piper matching this machine's architecture, or put a "
+            "working one earlier on PATH."
+        )
 
 
 def synth_wav(
@@ -126,7 +163,14 @@ def main() -> None:
     args = ap.parse_args()
 
     engine = pick_engine(args.engine, args.piper_model, args.mbrola_voice)
-    engine_label = f"mbrola:{args.mbrola_voice}" if engine == "mbrola" else engine
+    if engine == "mbrola":
+        engine_label = f"mbrola:{args.mbrola_voice}"
+    elif engine == "piper" and args.piper_model:
+        engine_label = f"piper:{Path(args.piper_model).stem}"
+    else:
+        engine_label = engine
+    if engine == "piper":
+        check_piper_runnable()
     has_sox = shutil.which("sox") is not None
     if not shutil.which("lame"):
         raise SystemExit("lame not found (needed for MP3 encoding).")

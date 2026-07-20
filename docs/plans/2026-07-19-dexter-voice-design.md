@@ -8,7 +8,9 @@
 > kept as fallback. Narration is templated and deterministic, so all 151
 > lines are renderable ahead of time with one fixed robotic voice
 > (Piper > espeak-ng+mbrola us2 > festival `kal_diphone` > espeak-ng, sox
-> pitch/normalize), which
+> pitch/normalize). The clips now in the repo are a **Piper `en_US-ryan-medium`
+> render at `--pitch-cents -100`**, picked by ear over the mbrola us2 pass it
+> replaced. This
 > also frees the 1 GB phone from synth CPU. Voice-cloning the show's actual
 > actor remains rejected (real-person voice imitation; infeasible offline).
 > `manifest.json` narration hashes + `tests/test_voice_clips.py` guard
