@@ -18,6 +18,22 @@ class MatchResult:
     score: float
     accepted: bool
     candidates: tuple[tuple[str, float], ...]
+    ambiguous: bool = False
+    """Top candidate was not separated from the runner-up; never auto-accepted."""
+
+
+AMBIGUITY_MARGIN = 1.0
+"""How far the top score must clear the runner-up to be auto-accepted.
+
+Deliberately small: the coverage cap below already separates the substring
+collisions that used to tie ("Char", "Mew", "Abra"), so this is only a backstop
+for candidates that stay genuinely indistinguishable -- e.g. "Nidoran", where
+OCR cannot read the trailing female/male sign and both species tie exactly.
+
+It cannot grow much: "Pikchu" beats "Pichu" by only 1.4 on the real name list,
+and that is a match we want to keep accepting. Widening this past that gap would
+push a legitimate typo read into the search UI.
+"""
 
 
 BUNDLED_NAMES = Path(__file__).resolve().parent.parent / "data" / "species_names.json"
@@ -214,6 +230,29 @@ def load_species_names(config: dict[str, Any]) -> list[str]:
     return names
 
 
+def coverage_cap(query: str, candidate: str) -> float:
+    """Ceiling for a candidate's score, given how much of it the query covers.
+
+    ``partial_ratio`` returns 100 whenever the query is a substring of the
+    candidate, and ``WRatio`` inherits that inflation. So a truncated OCR read of
+    "Char" scored a flat 100 against Charmander, Charmeleon, Charizard, Chimchar
+    and Charjabug at once, and the winner fell out of sort order -- a silent
+    wrong ID at full confidence, which the product rule forbids.
+
+    Damping the partial term by the length ratio restores the penalty for the
+    part of the candidate the query never accounted for. The plain ``ratio``
+    term is left alone, since it is already length-aware -- that is what keeps
+    "Pikchu" scoring 92 against "Pikachu" while "Char" drops to 67.
+    """
+    if not query or not candidate:
+        return 0.0
+    length_ratio = min(len(query), len(candidate)) / max(len(query), len(candidate))
+    return max(
+        float(fuzz.ratio(query, candidate)),
+        float(fuzz.partial_ratio(query, candidate)) * length_ratio,
+    )
+
+
 def match_name(
     query: str,
     names: Iterable[str],
@@ -231,25 +270,38 @@ def match_name(
     keys = list(folded.keys())
     q_key = q.casefold()
 
+    # Pull a wider pool than we return: the coverage cap below only ever lowers
+    # scores, so a candidate outside a scorer's top-`limit` can deserve a place
+    # in the final ranking once the inflated ones are damped down.
+    pool = max(limit * 5, 25)
+
     scores: dict[str, float] = {}
     for scorer in (fuzz.WRatio, fuzz.QRatio, fuzz.token_sort_ratio, fuzz.partial_ratio):
-        for key, score, _ in process.extract(q_key, keys, scorer=scorer, limit=limit):
+        for key, score, _ in process.extract(q_key, keys, scorer=scorer, limit=pool):
             display = folded[str(key)]
             prev = scores.get(display, 0.0)
             scores[display] = max(prev, float(score))
 
-    ranked = sorted(scores.items(), key=lambda kv: kv[1], reverse=True)[:limit]
+    capped = {
+        name: min(score, coverage_cap(q_key, name.casefold()))
+        for name, score in scores.items()
+    }
+
+    ranked = sorted(capped.items(), key=lambda kv: kv[1], reverse=True)[:limit]
     candidates = tuple((name, score) for name, score in ranked)
     if not candidates:
         return MatchResult(name="", score=0.0, accepted=False, candidates=())
 
     best_name, best_score = candidates[0]
-    accepted = best_score >= min_confidence
+    runner_up = candidates[1][1] if len(candidates) > 1 else 0.0
+    ambiguous = best_score - runner_up < AMBIGUITY_MARGIN
+    accepted = best_score >= min_confidence and not ambiguous
     return MatchResult(
         name=best_name,
         score=best_score,
         accepted=accepted,
         candidates=candidates,
+        ambiguous=ambiguous,
     )
 
 

@@ -29,6 +29,8 @@ interface MatchResult {
   name: string;
   score: number;
   accepted: boolean;
+  /** Top candidate was not separated from the runner-up; never auto-accepted. */
+  ambiguous: boolean;
   candidates: MatchCandidate[];
 }
 

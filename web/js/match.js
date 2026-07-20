@@ -50,6 +50,29 @@ function partialRatio(a, b) {
 }
 
 /**
+ * How far the top score must clear the runner-up to be auto-accepted.
+ *
+ * Deliberately small: the coverage damping in scorePair already separates the
+ * substring collisions that used to tie ("Char", "Mew", "Abra"), so this is
+ * only a backstop for candidates that stay genuinely indistinguishable — e.g.
+ * "Nidoran", where OCR cannot read the trailing female/male sign and both
+ * species tie exactly. It cannot grow much: "Pikchu" beats "Pichu" by a hair
+ * on the real name list, and that is a match we want to keep accepting.
+ */
+var AMBIGUITY_MARGIN = 1;
+
+/**
+ * partialRatio returns 100 whenever the query is a substring of the candidate,
+ * so a truncated OCR read of "Char" scored a flat 100 against Charmander,
+ * Charmeleon, Charizard, Chimchar and Charjabug at once — the winner fell out
+ * of sort order, a silent wrong ID at full confidence.
+ *
+ * Damping the partial term by the length ratio restores the penalty for the
+ * part of the candidate the query never accounted for. The plain ratio term is
+ * left alone, since it is already length-aware — that is what keeps "Pikchu"
+ * scoring high against "Pikachu" while "Char" drops below threshold.
+ *
+ * Mirrors coverage_cap() in poke/match.py.
  * @param {string} query
  * @param {string} name
  * @returns {number}
@@ -57,7 +80,9 @@ function partialRatio(a, b) {
 function scorePair(query, name) {
   var q = query.toLowerCase();
   var n = name.toLowerCase();
-  return Math.max(ratio(q, n), partialRatio(q, n));
+  if (!q.length || !n.length) return 0;
+  var lengthRatio = Math.min(q.length, n.length) / Math.max(q.length, n.length);
+  return Math.max(ratio(q, n), partialRatio(q, n) * lengthRatio);
 }
 
 /**
@@ -70,7 +95,7 @@ function matchName(query, names, minConfidence) {
   minConfidence = minConfidence == null ? 72 : minConfidence;
   var q = (query || "").trim();
   if (!q) {
-    return { name: "", score: 0, accepted: false, candidates: [] };
+    return { name: "", score: 0, accepted: false, ambiguous: false, candidates: [] };
   }
   /** @type {MatchCandidate[]} */
   var scored = [];
@@ -82,10 +107,13 @@ function matchName(query, names, minConfidence) {
   });
   var candidates = scored.slice(0, 5);
   var best = candidates[0];
+  var runnerUp = candidates.length > 1 ? candidates[1].score : 0;
+  var ambiguous = best.score - runnerUp < AMBIGUITY_MARGIN;
   return {
     name: best.name,
     score: best.score,
-    accepted: best.score >= minConfidence,
+    accepted: best.score >= minConfidence && !ambiguous,
+    ambiguous: ambiguous,
     candidates: candidates,
   };
 }

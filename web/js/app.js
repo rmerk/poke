@@ -105,9 +105,13 @@
    */
   function renderCandidates(match, statusMsg) {
     lastCandidates = match.candidates || [];
+    // An ambiguous match can score high — saying "low confidence (93)" there
+    // would read as a bug. The reason it went to search is the tie, not the score.
+    var reason = match.ambiguous
+      ? "Too close to call between " + lastCandidates.length + " matches"
+      : "Low confidence (" + Math.round(match.score) + ")";
     mustEl("search-status").textContent =
-      statusMsg ||
-      "Low confidence (" + Math.round(match.score) + "). Confirm or type a name.";
+      statusMsg || reason + ". Confirm or type a name.";
     var box = mustEl("candidates");
     box.innerHTML = "";
     for (var i = 0; i < lastCandidates.length; i++) {
