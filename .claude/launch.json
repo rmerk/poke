@@ -1,0 +1,11 @@
+{
+  "version": "0.0.1",
+  "configurations": [
+    {
+      "name": "poke-web",
+      "runtimeExecutable": "./scripts/serve-web.sh",
+      "runtimeArgs": [],
+      "port": 8080
+    }
+  ]
+}
