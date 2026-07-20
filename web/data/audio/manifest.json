@@ -2,607 +2,758 @@
   "bySlug": {
     "abra": {
       "file": "abra.mp3",
-      "sha1": "b8e3b01c7724bdc57a2b5fc869c1fdf51593b517"
+      "sha1": "b8e3b01c7724bdc57a2b5fc869c1fdf51593b517",
+      "ttsSha1": "ba60908a91c64c6eaa83379eefa1a4577b352879"
     },
     "aerodactyl": {
       "file": "aerodactyl.mp3",
-      "sha1": "fe476fdf7cf4cd23ef7b2aec38ac3f2389cf536f"
+      "sha1": "fe476fdf7cf4cd23ef7b2aec38ac3f2389cf536f",
+      "ttsSha1": "41bde6dac58146b73e2dd13b69476c926a28510b"
     },
     "alakazam": {
       "file": "alakazam.mp3",
-      "sha1": "04c2ad5c36d1eaeb15ac0e0a1f7f32deb6296b73"
+      "sha1": "04c2ad5c36d1eaeb15ac0e0a1f7f32deb6296b73",
+      "ttsSha1": "aab9071a02e1112b082605cbe47bb41a66b15b28"
     },
     "arbok": {
       "file": "arbok.mp3",
-      "sha1": "2b4e9d06f836aabdce0214d5ada974a66590b22a"
+      "sha1": "2b4e9d06f836aabdce0214d5ada974a66590b22a",
+      "ttsSha1": "249c89ac6f67b1e0c2b3ad3eaec119400556768e"
     },
     "arcanine": {
       "file": "arcanine.mp3",
-      "sha1": "292287b6a6c1a4fbce07ef538f75e7bef1d4e6ab"
+      "sha1": "292287b6a6c1a4fbce07ef538f75e7bef1d4e6ab",
+      "ttsSha1": "90110e2021c40af746d98ef1193b02a1a0620195"
     },
     "articuno": {
       "file": "articuno.mp3",
-      "sha1": "0e2b7f16daddb24d8644d404c0b19a26096900e7"
+      "sha1": "0e2b7f16daddb24d8644d404c0b19a26096900e7",
+      "ttsSha1": "266b29af648328217dffbce9202ae4cdaa868722"
     },
     "beedrill": {
       "file": "beedrill.mp3",
-      "sha1": "76c65fa472587883c523add57eef5bea5a49d9b0"
+      "sha1": "76c65fa472587883c523add57eef5bea5a49d9b0",
+      "ttsSha1": "b42d989c40c2b170531f76373ab54e85626313b3"
     },
     "bellsprout": {
       "file": "bellsprout.mp3",
-      "sha1": "c8255e599a100958271b1bd5a87bfec359d1c5ee"
+      "sha1": "c8255e599a100958271b1bd5a87bfec359d1c5ee",
+      "ttsSha1": "53e1d22dcd31029e5753ef27a5c6eb14239769e8"
     },
     "blastoise": {
       "file": "blastoise.mp3",
-      "sha1": "52f6c4194045323608317324a92898f848d83441"
+      "sha1": "52f6c4194045323608317324a92898f848d83441",
+      "ttsSha1": "62e12b5f25c2dd136ee5441e74ecc63073e7ff96"
     },
     "bulbasaur": {
       "file": "bulbasaur.mp3",
-      "sha1": "a9cfce51cf2710e5e0bc1a0220679e4ce647175a"
+      "sha1": "a9cfce51cf2710e5e0bc1a0220679e4ce647175a",
+      "ttsSha1": "7e71abfa6af39af1c38d3624bb94e4d17ad44bdd"
     },
     "butterfree": {
       "file": "butterfree.mp3",
-      "sha1": "9cb2f29aef7991d512a48a6e1ff57e48046af07b"
+      "sha1": "9cb2f29aef7991d512a48a6e1ff57e48046af07b",
+      "ttsSha1": "d6a4ac10e741ec12b4c9b991a3f39add6a25581b"
     },
     "caterpie": {
       "file": "caterpie.mp3",
-      "sha1": "1bd6538ea38acba15c1333aec96a0ba8374bfc4c"
+      "sha1": "1bd6538ea38acba15c1333aec96a0ba8374bfc4c",
+      "ttsSha1": "a11285744865de0970339422b6ff5237fc775747"
     },
     "chansey": {
       "file": "chansey.mp3",
-      "sha1": "ba8be52daad128195578882119a4a57890aa56f6"
+      "sha1": "ba8be52daad128195578882119a4a57890aa56f6",
+      "ttsSha1": "dd59abe798e913ad099b22a2e7c8c641026e6459"
     },
     "charizard": {
       "file": "charizard.mp3",
-      "sha1": "de94d4ae3b89b909c2c50a13660b2135c2bfcc78"
+      "sha1": "de94d4ae3b89b909c2c50a13660b2135c2bfcc78",
+      "ttsSha1": "db0b3bbcf21bf08529a07c5cd12c798e111144e3"
     },
     "charmander": {
       "file": "charmander.mp3",
-      "sha1": "ca1fd2503c1277e9587849e4e6e45aa38371663d"
+      "sha1": "ca1fd2503c1277e9587849e4e6e45aa38371663d",
+      "ttsSha1": "fdaba6c98ee18965a830f1a960d388f8fe746529"
     },
     "charmeleon": {
       "file": "charmeleon.mp3",
-      "sha1": "ac4d8f072e0df7cd5fcc19e692bb28304c0721cd"
+      "sha1": "ac4d8f072e0df7cd5fcc19e692bb28304c0721cd",
+      "ttsSha1": "03e28fd2dc6a62f20c280abec52ec6884d7f7cec"
     },
     "clefable": {
       "file": "clefable.mp3",
-      "sha1": "581ca0b931d3e5a037d50aec7e3c4869d51d9e26"
+      "sha1": "581ca0b931d3e5a037d50aec7e3c4869d51d9e26",
+      "ttsSha1": "693b989d16547e43c85917d6d3806b669f3e520e"
     },
     "clefairy": {
       "file": "clefairy.mp3",
-      "sha1": "401fe32c6ec22a9b0cfa587277d0e488e7042c80"
+      "sha1": "401fe32c6ec22a9b0cfa587277d0e488e7042c80",
+      "ttsSha1": "285e5ab46a2144928c90024fc1090da22b1740fd"
     },
     "cloyster": {
       "file": "cloyster.mp3",
-      "sha1": "cd42670c0da663cee489607d4d1fcd810c130d43"
+      "sha1": "cd42670c0da663cee489607d4d1fcd810c130d43",
+      "ttsSha1": "1ffe73fa3c46d04669d3b2c97101151779206cd7"
     },
     "cubone": {
       "file": "cubone.mp3",
-      "sha1": "53a388f02c0c8cbd3a4b7da3fddd55ffa73ff7fa"
+      "sha1": "53a388f02c0c8cbd3a4b7da3fddd55ffa73ff7fa",
+      "ttsSha1": "0c4bdc524f747b4b1966a0c5794bb18fd0496477"
     },
     "dewgong": {
       "file": "dewgong.mp3",
-      "sha1": "e6f699c4f3c4c2a7f9ba2bdceb1545c547bf47b8"
+      "sha1": "e6f699c4f3c4c2a7f9ba2bdceb1545c547bf47b8",
+      "ttsSha1": "ab5e48c8fb595466a6c0e39d6eed7e86f3cdcdfe"
     },
     "diglett": {
       "file": "diglett.mp3",
-      "sha1": "54df776d5477bb13a08edc818178184b55f95341"
+      "sha1": "54df776d5477bb13a08edc818178184b55f95341",
+      "ttsSha1": "d65f29d52a456e13293836bbf4e1df8ed120c1c7"
     },
     "ditto": {
       "file": "ditto.mp3",
-      "sha1": "127822fc655d0723b4622c473da4f062fa0e027f"
+      "sha1": "127822fc655d0723b4622c473da4f062fa0e027f",
+      "ttsSha1": "5544c5c84e97275f2a15de1ff2d69110a9a17e1e"
     },
     "dodrio": {
       "file": "dodrio.mp3",
-      "sha1": "e43b41c640231eb9a855dcb402ec7436c6b6f971"
+      "sha1": "e43b41c640231eb9a855dcb402ec7436c6b6f971",
+      "ttsSha1": "46ec281c5e2625cb17a8c2209aec6da3911380c7"
     },
     "doduo": {
       "file": "doduo.mp3",
-      "sha1": "d7d6453ff14e16c08465dd3d5257ccb8f451151d"
+      "sha1": "d7d6453ff14e16c08465dd3d5257ccb8f451151d",
+      "ttsSha1": "837a792cdc85c2028ac60d22ee342fa494bb8222"
     },
     "dragonair": {
       "file": "dragonair.mp3",
-      "sha1": "11c2b23f0a789c858a16f911bf3cd497d3a2d9c0"
+      "sha1": "11c2b23f0a789c858a16f911bf3cd497d3a2d9c0",
+      "ttsSha1": "82f5d6670b0669ffb38c3bcf3a533d0eb3edf9ec"
     },
     "dragonite": {
       "file": "dragonite.mp3",
-      "sha1": "583131ed858fc5fed85142f2a752edce19b2235a"
+      "sha1": "583131ed858fc5fed85142f2a752edce19b2235a",
+      "ttsSha1": "c39d7efe33225e4d95eeadf1fd7e6c837016bf82"
     },
     "dratini": {
       "file": "dratini.mp3",
-      "sha1": "b0c922969ca60ff3ba8c5c6dbe4598ecb95ec53b"
+      "sha1": "b0c922969ca60ff3ba8c5c6dbe4598ecb95ec53b",
+      "ttsSha1": "1f44ddbb6ce1c0616686cc7688d6e15df9ded4e5"
     },
     "drowzee": {
       "file": "drowzee.mp3",
-      "sha1": "e4e0ea8984b96b0c5bf9e23ead461f1fcd67a0be"
+      "sha1": "e4e0ea8984b96b0c5bf9e23ead461f1fcd67a0be",
+      "ttsSha1": "640405fc5337d837f1abff16a7a7788eba33d88a"
     },
     "dugtrio": {
       "file": "dugtrio.mp3",
-      "sha1": "192a893e33155a090e76e20b2eb8a2e90ec4886c"
+      "sha1": "192a893e33155a090e76e20b2eb8a2e90ec4886c",
+      "ttsSha1": "83e4636b41d7116ff7b54f911c7333359348e857"
     },
     "eevee": {
       "file": "eevee.mp3",
-      "sha1": "fc0a0cf221570981c421d7a5631f04a44858abd0"
+      "sha1": "fc0a0cf221570981c421d7a5631f04a44858abd0",
+      "ttsSha1": "5ff172683d2cd3b5f81fa7097c7e7329f22f202c"
     },
     "ekans": {
       "file": "ekans.mp3",
-      "sha1": "a61c186606c115436bba69e2fe38393de5af1e76"
+      "sha1": "a61c186606c115436bba69e2fe38393de5af1e76",
+      "ttsSha1": "752e1d9594ab80f0363bd316b78851b36e3888ea"
     },
     "electabuzz": {
       "file": "electabuzz.mp3",
-      "sha1": "bd6ec8a56726355ba961ca4ea197eed9186442bf"
+      "sha1": "bd6ec8a56726355ba961ca4ea197eed9186442bf",
+      "ttsSha1": "7862c3d5e2639a55e59f0520edb0054da21b051f"
     },
     "electrode": {
       "file": "electrode.mp3",
-      "sha1": "099075ef02a4bb1d0c681e83935a2459fc759b86"
+      "sha1": "099075ef02a4bb1d0c681e83935a2459fc759b86",
+      "ttsSha1": "ab86561c34f295124dbac0d3a288b20987648e76"
     },
     "exeggcute": {
       "file": "exeggcute.mp3",
-      "sha1": "b8837ca72c677585c701bd8f68e2023ec74a3771"
+      "sha1": "b8837ca72c677585c701bd8f68e2023ec74a3771",
+      "ttsSha1": "4638102845ba8d5ad0abac8eb0c7037dadd806d7"
     },
     "exeggutor": {
       "file": "exeggutor.mp3",
-      "sha1": "5cdd4a17014f1deef8d736dea06b0dea8da233e4"
+      "sha1": "5cdd4a17014f1deef8d736dea06b0dea8da233e4",
+      "ttsSha1": "49037e741815bbe3fa5f7b144430292dbca8a7fb"
     },
     "farfetchd": {
       "file": "farfetchd.mp3",
-      "sha1": "aeb6f570a75f2307bb43570a7f4a64f336fbebb4"
+      "sha1": "aeb6f570a75f2307bb43570a7f4a64f336fbebb4",
+      "ttsSha1": "c76b8d60d77c3ed91b830a5691fd875a35ef9af4"
     },
     "fearow": {
       "file": "fearow.mp3",
-      "sha1": "f3cbfabb822cddafeef57f320bdf0a3065f3f444"
+      "sha1": "f3cbfabb822cddafeef57f320bdf0a3065f3f444",
+      "ttsSha1": "853373134cd1d31f2b8efd3929e2dc5df7c2f1c6"
     },
     "flareon": {
       "file": "flareon.mp3",
-      "sha1": "d314c5fea07e755089eb8789f236421cbc4f3819"
+      "sha1": "d314c5fea07e755089eb8789f236421cbc4f3819",
+      "ttsSha1": "5b1cfa12bb6eb15c67656007e4f46a1de8035704"
     },
     "gastly": {
       "file": "gastly.mp3",
-      "sha1": "5d63df54d2f832d406984cc700a0368456b92513"
+      "sha1": "5d63df54d2f832d406984cc700a0368456b92513",
+      "ttsSha1": "1888098b915c7732750d70f002ac53d6cca3147a"
     },
     "gengar": {
       "file": "gengar.mp3",
-      "sha1": "d2474ac772cec1476f6f619ab493b4d2bdbd2f3e"
+      "sha1": "d2474ac772cec1476f6f619ab493b4d2bdbd2f3e",
+      "ttsSha1": "66c3795a20c3f22bc4ef0abdfa9d37ba410822d2"
     },
     "geodude": {
       "file": "geodude.mp3",
-      "sha1": "1cb04b5b392885ff69322fd6fbea9bcdf745bd95"
+      "sha1": "1cb04b5b392885ff69322fd6fbea9bcdf745bd95",
+      "ttsSha1": "04b2f5f71d7eadff69298fd14f640518241a4ba7"
     },
     "gloom": {
       "file": "gloom.mp3",
-      "sha1": "89592b15e319eb15807fb310ff5fdb17d3b303b9"
+      "sha1": "89592b15e319eb15807fb310ff5fdb17d3b303b9",
+      "ttsSha1": "bc7d5c03b7612eb564c747fac087fd2d3128a208"
     },
     "golbat": {
       "file": "golbat.mp3",
-      "sha1": "3d16f4ebc6fe9ecf60065e1bbcef53ebf1a6beab"
+      "sha1": "3d16f4ebc6fe9ecf60065e1bbcef53ebf1a6beab",
+      "ttsSha1": "7323ed3980aff2bdc1733e3638fd463464fa0f8e"
     },
     "goldeen": {
       "file": "goldeen.mp3",
-      "sha1": "e418435b16bb4d6482025f0a483630f1e326faca"
+      "sha1": "e418435b16bb4d6482025f0a483630f1e326faca",
+      "ttsSha1": "375632e06ef2135da4109bd1f4cf2e2bad78eff8"
     },
     "golduck": {
       "file": "golduck.mp3",
-      "sha1": "71beba4bb665b6a23fec641dcda0071c122b5f43"
+      "sha1": "71beba4bb665b6a23fec641dcda0071c122b5f43",
+      "ttsSha1": "8ec7bfcee8943179bf346103c533f19d8c83182e"
     },
     "golem": {
       "file": "golem.mp3",
-      "sha1": "f7f98176be94f08c3aee6bf1aa3a2ca46da13790"
+      "sha1": "f7f98176be94f08c3aee6bf1aa3a2ca46da13790",
+      "ttsSha1": "b79210e459a7314460ffc096be5e4220d911e752"
     },
     "graveler": {
       "file": "graveler.mp3",
-      "sha1": "53d49c857d971b07e7e558f5c24ca42488fd1483"
+      "sha1": "53d49c857d971b07e7e558f5c24ca42488fd1483",
+      "ttsSha1": "d2f6a9a9d12910b036d44c4a7f002274383f6332"
     },
     "grimer": {
       "file": "grimer.mp3",
-      "sha1": "19cb0c8109e09222e31e4ef6612a196aa9a5fdb3"
+      "sha1": "19cb0c8109e09222e31e4ef6612a196aa9a5fdb3",
+      "ttsSha1": "ae71d973d391d79c0b25e473eebf4c7669838ebe"
     },
     "growlithe": {
       "file": "growlithe.mp3",
-      "sha1": "eebc6aca3b11dcaff37390b7c28ec5f90b2faaa5"
+      "sha1": "eebc6aca3b11dcaff37390b7c28ec5f90b2faaa5",
+      "ttsSha1": "b488c6ff81e6a3ff72065518690693284e216b3f"
     },
     "gyarados": {
       "file": "gyarados.mp3",
-      "sha1": "5eb7200ba261e118d5f80fcb0e406d5eb4acf264"
+      "sha1": "5eb7200ba261e118d5f80fcb0e406d5eb4acf264",
+      "ttsSha1": "3e57aa162342e75389416e5e058613375acd93da"
     },
     "haunter": {
       "file": "haunter.mp3",
-      "sha1": "e95f924b7b72c4bbdb3396e29dc11f61e4fc6680"
+      "sha1": "e95f924b7b72c4bbdb3396e29dc11f61e4fc6680",
+      "ttsSha1": "7ea988cde1a631ba9a43ead8c367366615af61dc"
     },
     "hitmonchan": {
       "file": "hitmonchan.mp3",
-      "sha1": "1b63cd2b83c3975d6d382abd1c37dc062f88aee3"
+      "sha1": "1b63cd2b83c3975d6d382abd1c37dc062f88aee3",
+      "ttsSha1": "1e763840a5b8820c9f37d992c298ad713510eb40"
     },
     "hitmonlee": {
       "file": "hitmonlee.mp3",
-      "sha1": "e65e24ef678872e8c984fa116acc3b3003725641"
+      "sha1": "e65e24ef678872e8c984fa116acc3b3003725641",
+      "ttsSha1": "28447579764fb4631d28c5bc75aa49a36de347a7"
     },
     "horsea": {
       "file": "horsea.mp3",
-      "sha1": "f1bf3a336b01ecef4be6a8f6209327e7bc9a82a2"
+      "sha1": "f1bf3a336b01ecef4be6a8f6209327e7bc9a82a2",
+      "ttsSha1": "a328c9fb6b48ac0b00eda2567b42a2b9f2201ff8"
     },
     "hypno": {
       "file": "hypno.mp3",
-      "sha1": "5725dca676fcbc412976ad56a0ad5b4af43ad91a"
+      "sha1": "5725dca676fcbc412976ad56a0ad5b4af43ad91a",
+      "ttsSha1": "e47a2af8b33aa76f5a2a3d1384156875bd25c08b"
     },
     "ivysaur": {
       "file": "ivysaur.mp3",
-      "sha1": "936ccec37ec8c39ceb6e13b55bce0915379ab1bd"
+      "sha1": "936ccec37ec8c39ceb6e13b55bce0915379ab1bd",
+      "ttsSha1": "959ee63a6cf8c1b58445101e29baab3dc6d22297"
     },
     "jigglypuff": {
       "file": "jigglypuff.mp3",
-      "sha1": "e9ed8c35349babfefa28ccacd92eaba4fc051e76"
+      "sha1": "e9ed8c35349babfefa28ccacd92eaba4fc051e76",
+      "ttsSha1": "466c596db90ae295e4e9b7877c39c870209fa5dc"
     },
     "jolteon": {
       "file": "jolteon.mp3",
-      "sha1": "1599416cfac7184d77b70940f024e7a76138e5d9"
+      "sha1": "1599416cfac7184d77b70940f024e7a76138e5d9",
+      "ttsSha1": "28e7aaccbaa58710c0b0999360e341454d91d0d2"
     },
     "jynx": {
       "file": "jynx.mp3",
-      "sha1": "fcf123adee88287188d127a9db36e9ab39d1400f"
+      "sha1": "fcf123adee88287188d127a9db36e9ab39d1400f",
+      "ttsSha1": "f9ab33a3868d0bb23578b39765a5f95d4206db06"
     },
     "kabuto": {
       "file": "kabuto.mp3",
-      "sha1": "c28403b3f178f6272f39358224b69f3aed45ef8c"
+      "sha1": "c28403b3f178f6272f39358224b69f3aed45ef8c",
+      "ttsSha1": "5eacf427ad28bf2c8f064da38323253291552809"
     },
     "kabutops": {
       "file": "kabutops.mp3",
-      "sha1": "47ffcfea913e1b489f66897c4ec57c38f62b1267"
+      "sha1": "47ffcfea913e1b489f66897c4ec57c38f62b1267",
+      "ttsSha1": "05491e0d9cb8c77f38556fa1a49d56959533a4e8"
     },
     "kadabra": {
       "file": "kadabra.mp3",
-      "sha1": "e50779fcc8e4f34395fd6ad9845dfcb676521b07"
+      "sha1": "e50779fcc8e4f34395fd6ad9845dfcb676521b07",
+      "ttsSha1": "e9829c1db1341837bee0c6c7534f220dca919c8c"
     },
     "kakuna": {
       "file": "kakuna.mp3",
-      "sha1": "c245dce29237c12c6f0b9d1b54dd3b41968b9732"
+      "sha1": "c245dce29237c12c6f0b9d1b54dd3b41968b9732",
+      "ttsSha1": "1ad5872ec4d5e7a987b15aab5371e238436e57b6"
     },
     "kangaskhan": {
       "file": "kangaskhan.mp3",
-      "sha1": "42180a649848e8c224adf4cd7015837e16ca9762"
+      "sha1": "42180a649848e8c224adf4cd7015837e16ca9762",
+      "ttsSha1": "20af97738351497759ff02a299fae21f7d9f2b68"
     },
     "kingler": {
       "file": "kingler.mp3",
-      "sha1": "1c4a93851ba62fa1383a59bf89e8e2bd333f23d8"
+      "sha1": "1c4a93851ba62fa1383a59bf89e8e2bd333f23d8",
+      "ttsSha1": "a034eaaa4c141a8f039c6c9ab1c53f47a8c55ae3"
     },
     "koffing": {
       "file": "koffing.mp3",
-      "sha1": "851caac04cd35276d81f6ebe92af61aee57785f5"
+      "sha1": "851caac04cd35276d81f6ebe92af61aee57785f5",
+      "ttsSha1": "44431c3a99810f9d3a3ffc7aa85a8ddac1497abe"
     },
     "krabby": {
       "file": "krabby.mp3",
-      "sha1": "460ae0f1a19cbb55a344023e102af84eecea631e"
+      "sha1": "460ae0f1a19cbb55a344023e102af84eecea631e",
+      "ttsSha1": "a3b00e644a9c84f7784c065398e790b267815988"
     },
     "lapras": {
       "file": "lapras.mp3",
-      "sha1": "af75089dcbebd7f216880838b99e33135184eab5"
+      "sha1": "af75089dcbebd7f216880838b99e33135184eab5",
+      "ttsSha1": "c3e59298482b50ae45982bd26ab8a9eb6a4f859d"
     },
     "lickitung": {
       "file": "lickitung.mp3",
-      "sha1": "e7d0d1bbe607fe640cfbc773123f2c6c4f3f9502"
+      "sha1": "e7d0d1bbe607fe640cfbc773123f2c6c4f3f9502",
+      "ttsSha1": "d23d1a25d2a988be5dffa45eb7aca8b605d70001"
     },
     "machamp": {
       "file": "machamp.mp3",
-      "sha1": "87b1615ac122bdf7512aece86474154e14dec319"
+      "sha1": "87b1615ac122bdf7512aece86474154e14dec319",
+      "ttsSha1": "fba1e9f75078678711cebaf9db23295a9ca26593"
     },
     "machoke": {
       "file": "machoke.mp3",
-      "sha1": "884ff411662b0222bd4f7a265fbbc366aa591f85"
+      "sha1": "884ff411662b0222bd4f7a265fbbc366aa591f85",
+      "ttsSha1": "dcafb51f05a718fb0d67b0bcb5293613d176ffd2"
     },
     "machop": {
       "file": "machop.mp3",
-      "sha1": "49e1b5dfa89f2676e672dc5e990da543c36b069c"
+      "sha1": "49e1b5dfa89f2676e672dc5e990da543c36b069c",
+      "ttsSha1": "f5555dea819b4e4d93291f8f1e7cfcab534e27ff"
     },
     "magikarp": {
       "file": "magikarp.mp3",
-      "sha1": "d9e7b961777ef031b951f50883f9abc4dafaa8d5"
+      "sha1": "d9e7b961777ef031b951f50883f9abc4dafaa8d5",
+      "ttsSha1": "5c2bcd49bca8a57d8da33f1fd7378c57a78ccb6a"
     },
     "magmar": {
       "file": "magmar.mp3",
-      "sha1": "76e1a61a79a9cb109d8289525a3229c3c389532f"
+      "sha1": "76e1a61a79a9cb109d8289525a3229c3c389532f",
+      "ttsSha1": "a78de436f5805c3943c9494b76277a8c4957952f"
     },
     "magnemite": {
       "file": "magnemite.mp3",
-      "sha1": "ef7e79e0b269c7ccd9ab8b332eb64bc60a6f6ce0"
+      "sha1": "ef7e79e0b269c7ccd9ab8b332eb64bc60a6f6ce0",
+      "ttsSha1": "b018e7c2d4502c3b450cc24e3412f4a0600a8c31"
     },
     "magneton": {
       "file": "magneton.mp3",
-      "sha1": "fecc25aeeef54a20fb9eaab76d6a23f8f017d9fb"
+      "sha1": "fecc25aeeef54a20fb9eaab76d6a23f8f017d9fb",
+      "ttsSha1": "59761793b091089c942dd25d6e08b82644a33e7a"
     },
     "mankey": {
       "file": "mankey.mp3",
-      "sha1": "935d0d6ac1f3913dbba116b9adfbaf66e0f7251a"
+      "sha1": "935d0d6ac1f3913dbba116b9adfbaf66e0f7251a",
+      "ttsSha1": "19234442afbe1835d61739019b4bfe0da3219967"
     },
     "marowak": {
       "file": "marowak.mp3",
-      "sha1": "3117058566e54d078fd86d7c50f6c1d6607e7d96"
+      "sha1": "3117058566e54d078fd86d7c50f6c1d6607e7d96",
+      "ttsSha1": "f0a1c4d3ac085b41c452983bec5b336259a192b4"
     },
     "meowth": {
       "file": "meowth.mp3",
-      "sha1": "8dbfbfd6f0e4b45b66c61ae6d33c69bc83629329"
+      "sha1": "8dbfbfd6f0e4b45b66c61ae6d33c69bc83629329",
+      "ttsSha1": "a09b6702aba0a1646bf20af506acf0709bd5567c"
     },
     "metapod": {
       "file": "metapod.mp3",
-      "sha1": "e2ebae5bed38e9ba3a1a52bfc50c20465a03634d"
+      "sha1": "e2ebae5bed38e9ba3a1a52bfc50c20465a03634d",
+      "ttsSha1": "f697f6aa864daf889175ceb34f63adeac4bf77f2"
     },
     "mew": {
       "file": "mew.mp3",
-      "sha1": "17c45fae87ccff9c0db01eb647fad431acc6749a"
+      "sha1": "17c45fae87ccff9c0db01eb647fad431acc6749a",
+      "ttsSha1": "29e0fa1a641398a491c43da6c9a079558b9c5a07"
     },
     "mewtwo": {
       "file": "mewtwo.mp3",
-      "sha1": "f7db7a202bb93a63c2e15435ceb6f5edc431669b"
+      "sha1": "f7db7a202bb93a63c2e15435ceb6f5edc431669b",
+      "ttsSha1": "37f827da9edb3768245fd7376de7adcb3d259f0c"
     },
     "moltres": {
       "file": "moltres.mp3",
-      "sha1": "d120dc20c935246cbe2f987ab66dafcffbc42110"
+      "sha1": "d120dc20c935246cbe2f987ab66dafcffbc42110",
+      "ttsSha1": "3c77d3dd7d927ff3a1599040f8bcdad064a0ab30"
     },
     "mr-mime": {
       "file": "mr-mime.mp3",
-      "sha1": "7616ec6ec05c7b4e6b706c91ecb0fc634b714d27"
+      "sha1": "7616ec6ec05c7b4e6b706c91ecb0fc634b714d27",
+      "ttsSha1": "b395f07544010dd888dc7842008ad3be268d7363"
     },
     "muk": {
       "file": "muk.mp3",
-      "sha1": "fa34f537eadb145c0b9a72dbefa6824a2f83a51e"
+      "sha1": "fa34f537eadb145c0b9a72dbefa6824a2f83a51e",
+      "ttsSha1": "807004a37c9306f8dded1188b95cc447954bc636"
     },
     "nidoking": {
       "file": "nidoking.mp3",
-      "sha1": "8bc6fcd630fe5f53e7b89fa69351abc694e3da2c"
+      "sha1": "8bc6fcd630fe5f53e7b89fa69351abc694e3da2c",
+      "ttsSha1": "3f39f2f60d3fb267735043a24c34278d1ebb9307"
     },
     "nidoqueen": {
       "file": "nidoqueen.mp3",
-      "sha1": "a25f77aecb07d8cd52f1f3d9c3825ad0ad1f7456"
+      "sha1": "a25f77aecb07d8cd52f1f3d9c3825ad0ad1f7456",
+      "ttsSha1": "d109726d62bbb54ddaaf5bba24807159e5049215"
     },
     "nidoran-f": {
       "file": "nidoran-f.mp3",
-      "sha1": "d7ae60bfcaf2421f478e69a06025df16776cc7c0"
+      "sha1": "d7ae60bfcaf2421f478e69a06025df16776cc7c0",
+      "ttsSha1": "bde5903294fb43cfee57fa77cd09c69df9e717f4"
     },
     "nidoran-m": {
       "file": "nidoran-m.mp3",
-      "sha1": "b04e6ca66b1e252c5a03e1191a09a52a4de0c58e"
+      "sha1": "b04e6ca66b1e252c5a03e1191a09a52a4de0c58e",
+      "ttsSha1": "ca5bc8c6471161ead3beb0489d8d4c20e101d25a"
     },
     "nidorina": {
       "file": "nidorina.mp3",
-      "sha1": "6754dfa09f2e1555a6ffc78680fad5c6d89121cb"
+      "sha1": "6754dfa09f2e1555a6ffc78680fad5c6d89121cb",
+      "ttsSha1": "438dfbbfda9342ecc5ad9f637b4b9924e82badea"
     },
     "nidorino": {
       "file": "nidorino.mp3",
-      "sha1": "99f399dfe62f0806579c6f39f569c2ad367f3bce"
+      "sha1": "99f399dfe62f0806579c6f39f569c2ad367f3bce",
+      "ttsSha1": "7823032031096c51eda2f1bb59572621c471117d"
     },
     "ninetales": {
       "file": "ninetales.mp3",
-      "sha1": "6e15339048d4bdd3b2619c0c86fabf8ab402759c"
+      "sha1": "6e15339048d4bdd3b2619c0c86fabf8ab402759c",
+      "ttsSha1": "743f090e62ddb030a1f14f34689d580312badf28"
     },
     "oddish": {
       "file": "oddish.mp3",
-      "sha1": "900477df26b2bed100f713f1dc96f4850c28237a"
+      "sha1": "900477df26b2bed100f713f1dc96f4850c28237a",
+      "ttsSha1": "6858c985952699158057ec547af337a2c11171c5"
     },
     "omanyte": {
       "file": "omanyte.mp3",
-      "sha1": "2d131410aa8225220e0c1580c27a8a1f6fb00f53"
+      "sha1": "2d131410aa8225220e0c1580c27a8a1f6fb00f53",
+      "ttsSha1": "aab915c5b82b83d799f2a68c72409a746f8014dc"
     },
     "omastar": {
       "file": "omastar.mp3",
-      "sha1": "24dd1b3bbea16aabcb7e7f6636b2e0d17f68a0bf"
+      "sha1": "24dd1b3bbea16aabcb7e7f6636b2e0d17f68a0bf",
+      "ttsSha1": "02807999fa14542861d5b2c9e19af23ca82f0197"
     },
     "onix": {
       "file": "onix.mp3",
-      "sha1": "16126d845f7342bd5d2dccc6fd29aa4eeb08fdaa"
+      "sha1": "16126d845f7342bd5d2dccc6fd29aa4eeb08fdaa",
+      "ttsSha1": "6f7d75162628150ae1071dcac1256d32b809c8d6"
     },
     "paras": {
       "file": "paras.mp3",
-      "sha1": "ec302913881a53a6e04ff70e630d3a26be6a96e6"
+      "sha1": "ec302913881a53a6e04ff70e630d3a26be6a96e6",
+      "ttsSha1": "e3a104336add2eb9b137af0c66749fc8a106f8a8"
     },
     "parasect": {
       "file": "parasect.mp3",
-      "sha1": "db95a457775f20dee1a195a0ad5a5da83c305725"
+      "sha1": "db95a457775f20dee1a195a0ad5a5da83c305725",
+      "ttsSha1": "add1535bbab1e5967c9630d187864c4b3a9720fe"
     },
     "persian": {
       "file": "persian.mp3",
-      "sha1": "cb2aabf2ec09bdffc1bbf1781e3f75e3cb78af39"
+      "sha1": "cb2aabf2ec09bdffc1bbf1781e3f75e3cb78af39",
+      "ttsSha1": "3cd0b1cde09f84da914e8f75e5d71edcf7617b37"
     },
     "pidgeot": {
       "file": "pidgeot.mp3",
-      "sha1": "b0248fe0ee6524b91ac87eaf4e1b191f81b9c53f"
+      "sha1": "b0248fe0ee6524b91ac87eaf4e1b191f81b9c53f",
+      "ttsSha1": "b862f00e25500ea99e1528e4654b2c1e8f3d88d2"
     },
     "pidgeotto": {
       "file": "pidgeotto.mp3",
-      "sha1": "c1d07dcecc551c7b0b3a9356f1a55fdb2c95116c"
+      "sha1": "c1d07dcecc551c7b0b3a9356f1a55fdb2c95116c",
+      "ttsSha1": "6d9a9c783a8a0506f602af13283c6aab1ad18c23"
     },
     "pidgey": {
       "file": "pidgey.mp3",
-      "sha1": "6f03320c6f112594d38e32ef53c261ea33ed51a9"
+      "sha1": "6f03320c6f112594d38e32ef53c261ea33ed51a9",
+      "ttsSha1": "26cee7c9b29e096aa9c46249126ec7a5a166bd89"
     },
     "pikachu": {
       "file": "pikachu.mp3",
-      "sha1": "6b82f35278842d0637e1d161a5ff3cfb6de1c417"
+      "sha1": "6b82f35278842d0637e1d161a5ff3cfb6de1c417",
+      "ttsSha1": "e39a2e3de6da11f1af468e517b1d7c77f96492c3"
     },
     "pinsir": {
       "file": "pinsir.mp3",
-      "sha1": "f6a04bdf376d99c1fa2008ac212b12d33a5fe19a"
+      "sha1": "f6a04bdf376d99c1fa2008ac212b12d33a5fe19a",
+      "ttsSha1": "2a1a6c6459bcb4ef890925733330723776e8246b"
     },
     "poliwag": {
       "file": "poliwag.mp3",
-      "sha1": "995f0b9952807c0cc9cab98d5b47374570fb4a0a"
+      "sha1": "995f0b9952807c0cc9cab98d5b47374570fb4a0a",
+      "ttsSha1": "4164092302a7ec1559a62c4ba46e19b2ac170c04"
     },
     "poliwhirl": {
       "file": "poliwhirl.mp3",
-      "sha1": "4f80eb1eb88b3244f2545fc9a12cb45569c228bc"
+      "sha1": "4f80eb1eb88b3244f2545fc9a12cb45569c228bc",
+      "ttsSha1": "df25226e7f1623a1203beafb22ce4861ff326183"
     },
     "poliwrath": {
       "file": "poliwrath.mp3",
-      "sha1": "47d00b33494070b067eb39afb7af0c6a24987ec8"
+      "sha1": "47d00b33494070b067eb39afb7af0c6a24987ec8",
+      "ttsSha1": "e59113a9b8470c94aa71b54bf913bd8e6b25a121"
     },
     "ponyta": {
       "file": "ponyta.mp3",
-      "sha1": "b6fa68ef42525a70939c2d87d1008d4c99664e7f"
+      "sha1": "b6fa68ef42525a70939c2d87d1008d4c99664e7f",
+      "ttsSha1": "8e30fd954ead8d1b8bd6808b9dbca5f08c3c1d34"
     },
     "porygon": {
       "file": "porygon.mp3",
-      "sha1": "ae40d692a131e381dda886f6947d954713c7289b"
+      "sha1": "ae40d692a131e381dda886f6947d954713c7289b",
+      "ttsSha1": "24fa44e08eecc8d186d7ef165b65086701383ee0"
     },
     "primeape": {
       "file": "primeape.mp3",
-      "sha1": "fc227dbee52cea504832b8aff918afe5b400633f"
+      "sha1": "fc227dbee52cea504832b8aff918afe5b400633f",
+      "ttsSha1": "f9b325beada1f44cd47469f35315d3cb7e015e55"
     },
     "psyduck": {
       "file": "psyduck.mp3",
-      "sha1": "371417d8c344350624c89a8b45112a18bcb0f302"
+      "sha1": "371417d8c344350624c89a8b45112a18bcb0f302",
+      "ttsSha1": "d9db14ef5d5a8115c5cb3390e5ad800a3f864a9f"
     },
     "raichu": {
       "file": "raichu.mp3",
-      "sha1": "15b4c2a67ce226798b2db54b02cc4482959d0bd5"
+      "sha1": "15b4c2a67ce226798b2db54b02cc4482959d0bd5",
+      "ttsSha1": "288f4f52a2a9aba19c29f314d0c1eff461bacf16"
     },
     "rapidash": {
       "file": "rapidash.mp3",
-      "sha1": "93c1ed28c65a7a66f0bfe37ff1252c0a916e1bc1"
+      "sha1": "93c1ed28c65a7a66f0bfe37ff1252c0a916e1bc1",
+      "ttsSha1": "e8db642dae93315617b014e8a6a881d097ef94d3"
     },
     "raticate": {
       "file": "raticate.mp3",
-      "sha1": "73402f63893cffc6b35f152c997de0723bd63702"
+      "sha1": "73402f63893cffc6b35f152c997de0723bd63702",
+      "ttsSha1": "f4c642874c2100edb6fb4d3d4c4a0df98477697e"
     },
     "rattata": {
       "file": "rattata.mp3",
-      "sha1": "c821e91fe90cf3727a84544882dc47e2a0883d90"
+      "sha1": "c821e91fe90cf3727a84544882dc47e2a0883d90",
+      "ttsSha1": "15ced348c34cfe4720bb8a957965ac435e637cf2"
     },
     "rhydon": {
       "file": "rhydon.mp3",
-      "sha1": "2eeb3d902082bb98fca3d6879a675e6a2882ea60"
+      "sha1": "2eeb3d902082bb98fca3d6879a675e6a2882ea60",
+      "ttsSha1": "93d58e2e6f8295a18325593df621c382fdfcfd67"
     },
     "rhyhorn": {
       "file": "rhyhorn.mp3",
-      "sha1": "be7c282ed407b958d8ad240fbc4bcd0241147793"
+      "sha1": "be7c282ed407b958d8ad240fbc4bcd0241147793",
+      "ttsSha1": "2b4dd2b6fc29dbaedd0074775921551e6aa6dcee"
     },
     "sandshrew": {
       "file": "sandshrew.mp3",
-      "sha1": "c29d65f3f4f67ef629660b9c5fb0afa61c61aeaf"
+      "sha1": "c29d65f3f4f67ef629660b9c5fb0afa61c61aeaf",
+      "ttsSha1": "33aa166032ae6739bde7670231bd41f595cadf29"
     },
     "sandslash": {
       "file": "sandslash.mp3",
-      "sha1": "4200a24da41092806ee07f9523aa9305806d9307"
+      "sha1": "4200a24da41092806ee07f9523aa9305806d9307",
+      "ttsSha1": "b7d7b6a4946518fd386c5152527972f34e635f2b"
     },
     "scyther": {
       "file": "scyther.mp3",
-      "sha1": "f30a6a0bb08635d5eef16ad5b83603a47c85f806"
+      "sha1": "f30a6a0bb08635d5eef16ad5b83603a47c85f806",
+      "ttsSha1": "a40c275a245f629e410fa50c84f369b04a6bdb72"
     },
     "seadra": {
       "file": "seadra.mp3",
-      "sha1": "d01567d395ebcb4d550ac133032917b4b6fc218c"
+      "sha1": "d01567d395ebcb4d550ac133032917b4b6fc218c",
+      "ttsSha1": "890165db7203fd819bb39a65d440a8a9a9d988dc"
     },
     "seaking": {
       "file": "seaking.mp3",
-      "sha1": "defa92f1159a4db99819d35bf0ddc90b55ceb696"
+      "sha1": "defa92f1159a4db99819d35bf0ddc90b55ceb696",
+      "ttsSha1": "e0d6491177c44f19734b89459e7a280873a9094b"
     },
     "seel": {
       "file": "seel.mp3",
-      "sha1": "4b4778480a4febf4ad703c9868e36c2e46197568"
+      "sha1": "4b4778480a4febf4ad703c9868e36c2e46197568",
+      "ttsSha1": "62f04fff3ee33fe80d7903b2084882ea48959fb4"
     },
     "shellder": {
       "file": "shellder.mp3",
-      "sha1": "88a2475eb5cd6a658e88e2999162916aea99bbcd"
+      "sha1": "88a2475eb5cd6a658e88e2999162916aea99bbcd",
+      "ttsSha1": "2197361710bc75201fbcea30f8caa4305174fc05"
     },
     "slowbro": {
       "file": "slowbro.mp3",
-      "sha1": "12a1aa6af48b34fef6fdbc2197ef63a4f2945926"
+      "sha1": "12a1aa6af48b34fef6fdbc2197ef63a4f2945926",
+      "ttsSha1": "d464429e115fc5cdc8d796533776f3d22f930e16"
     },
     "slowpoke": {
       "file": "slowpoke.mp3",
-      "sha1": "61285287c66e6756c264023918815aed91b391dc"
+      "sha1": "61285287c66e6756c264023918815aed91b391dc",
+      "ttsSha1": "5c7361d89c93cdb3bedcdfa07f8cc899c17cc526"
     },
     "snorlax": {
       "file": "snorlax.mp3",
-      "sha1": "78f36539eadf158d08913ed77702f52a83515f55"
+      "sha1": "78f36539eadf158d08913ed77702f52a83515f55",
+      "ttsSha1": "c61f2f2bc31caa9be7785ee5b3b7d412d8424bf4"
     },
     "spearow": {
       "file": "spearow.mp3",
-      "sha1": "854b4357953bf8d21270cd8fcc7f2b2d0d360b50"
+      "sha1": "854b4357953bf8d21270cd8fcc7f2b2d0d360b50",
+      "ttsSha1": "c4c9e22bd7cc1ccf3bedced34f03f6a66daa5184"
     },
     "squirtle": {
       "file": "squirtle.mp3",
-      "sha1": "4500f6db5d5808fc58b257a96caffd88f023a5ad"
+      "sha1": "4500f6db5d5808fc58b257a96caffd88f023a5ad",
+      "ttsSha1": "00dcd28b038b4fbe21b44a69041c619fbba61dfc"
     },
     "starmie": {
       "file": "starmie.mp3",
-      "sha1": "5dd0c8b8bf6065a10fb5084bffb842ebc86fd34d"
+      "sha1": "5dd0c8b8bf6065a10fb5084bffb842ebc86fd34d",
+      "ttsSha1": "d533e28854f945e4eeb57b806625410038227833"
     },
     "staryu": {
       "file": "staryu.mp3",
-      "sha1": "d79eee77f42eadf4229c5ff873a2889744a1ace3"
+      "sha1": "d79eee77f42eadf4229c5ff873a2889744a1ace3",
+      "ttsSha1": "fbd0b205209e02e63198aebf99b099a5ce9fabf5"
     },
     "tangela": {
       "file": "tangela.mp3",
-      "sha1": "afc5d913b6f8c824c13e671a3e87fd7bca455821"
+      "sha1": "afc5d913b6f8c824c13e671a3e87fd7bca455821",
+      "ttsSha1": "1e6f1b18d035802189296bb610e015b6c01cd6b1"
     },
     "tauros": {
       "file": "tauros.mp3",
-      "sha1": "8dcc37d3368b3ae399f51285398ebf43c1e3ac67"
+      "sha1": "8dcc37d3368b3ae399f51285398ebf43c1e3ac67",
+      "ttsSha1": "9955226e21601f80feca547410a2062c687e261e"
     },
     "tentacool": {
       "file": "tentacool.mp3",
-      "sha1": "7fc311698b3339df01cf01e3af3e068040fa9d7c"
+      "sha1": "7fc311698b3339df01cf01e3af3e068040fa9d7c",
+      "ttsSha1": "fad80d7bc9bc62ffeab7e70d0935dcacfc788551"
     },
     "tentacruel": {
       "file": "tentacruel.mp3",
-      "sha1": "87b6c099999394d7eefabdbaf39ab48eceebc2dc"
+      "sha1": "87b6c099999394d7eefabdbaf39ab48eceebc2dc",
+      "ttsSha1": "7bea328ce10fd33defb8462f2949ea21020c09d9"
     },
     "vaporeon": {
       "file": "vaporeon.mp3",
-      "sha1": "063a097a9bac1ffbaf9a3519cf4fddf2e9c6b171"
+      "sha1": "063a097a9bac1ffbaf9a3519cf4fddf2e9c6b171",
+      "ttsSha1": "212f6b92a53a5b53a6bd473f60ef86a7dce0c9ad"
     },
     "venomoth": {
       "file": "venomoth.mp3",
-      "sha1": "6a1a89390de0a8db383dd7f06344683cdb7c197b"
+      "sha1": "6a1a89390de0a8db383dd7f06344683cdb7c197b",
+      "ttsSha1": "40278b7cdc73c7a3352e2148929b271ba936f981"
     },
     "venonat": {
       "file": "venonat.mp3",
-      "sha1": "50c5133771ed3a088542878bf6eb80d2785daab0"
+      "sha1": "50c5133771ed3a088542878bf6eb80d2785daab0",
+      "ttsSha1": "1a358408abc6ff915fab09ff33ea246037879cc4"
     },
     "venusaur": {
       "file": "venusaur.mp3",
-      "sha1": "1e38be5fdd25d3dd11158f6e3b0ebc1c1a6457b6"
+      "sha1": "1e38be5fdd25d3dd11158f6e3b0ebc1c1a6457b6",
+      "ttsSha1": "bc21ef6f4286e696f8fec41d42bca0eb4265c785"
     },
     "victreebel": {
       "file": "victreebel.mp3",
-      "sha1": "16e11640e2940605cd8f6343e931400fad1cba27"
+      "sha1": "16e11640e2940605cd8f6343e931400fad1cba27",
+      "ttsSha1": "47986e3c312def14a5d8f84675ef0b8d38571df2"
     },
     "vileplume": {
       "file": "vileplume.mp3",
-      "sha1": "d7a4313d32815de1ea1bbfc16f03de4d8aee5a9c"
+      "sha1": "d7a4313d32815de1ea1bbfc16f03de4d8aee5a9c",
+      "ttsSha1": "7294b291e75e4f7f7885cd5d728af524c8013132"
     },
     "voltorb": {
       "file": "voltorb.mp3",
-      "sha1": "927f142efeb010943422403702c09f425eac37e3"
+      "sha1": "927f142efeb010943422403702c09f425eac37e3",
+      "ttsSha1": "9c70900fdc0ff9e10671c70bc2d56898675b559b"
     },
     "vulpix": {
       "file": "vulpix.mp3",
-      "sha1": "f26887f5512341e67541ce9027ad1048ed7c4c4e"
+      "sha1": "f26887f5512341e67541ce9027ad1048ed7c4c4e",
+      "ttsSha1": "c819e18e2fee3cd08d47a30410d51abe7e2a89b4"
     },
     "wartortle": {
       "file": "wartortle.mp3",
-      "sha1": "97dee0ce795c8b09b36b16150ddecc9e8698f4bb"
+      "sha1": "97dee0ce795c8b09b36b16150ddecc9e8698f4bb",
+      "ttsSha1": "092a8a74e751f57db6ba218eb76b4f85d45f9061"
     },
     "weedle": {
       "file": "weedle.mp3",
-      "sha1": "65f8cc6398d233893e99a74b89bd9e925cd7ee19"
+      "sha1": "65f8cc6398d233893e99a74b89bd9e925cd7ee19",
+      "ttsSha1": "c16ce6d423a5e1d513c87b992982df4bff92f3d4"
     },
     "weepinbell": {
       "file": "weepinbell.mp3",
-      "sha1": "68d08b340651693e6cabf46c2e599d0924fc2f06"
+      "sha1": "68d08b340651693e6cabf46c2e599d0924fc2f06",
+      "ttsSha1": "2a36953cd929fc763b2446c55b1b74d5495ae191"
     },
     "weezing": {
       "file": "weezing.mp3",
-      "sha1": "9987e9e9ccd8ce50e02cd00d35b1cd1ef7f11509"
+      "sha1": "9987e9e9ccd8ce50e02cd00d35b1cd1ef7f11509",
+      "ttsSha1": "6d70ca72c4fc9b4e1ef5bb00b41a606a37416415"
     },
     "wigglytuff": {
       "file": "wigglytuff.mp3",
-      "sha1": "1c26e95779aef7b4f8c2de6610d81a73c67bdd50"
+      "sha1": "1c26e95779aef7b4f8c2de6610d81a73c67bdd50",
+      "ttsSha1": "241cbe6f8aab73ab15874ee2c25ed01afe0e59e7"
     },
     "zapdos": {
       "file": "zapdos.mp3",
-      "sha1": "3daacd3aafd92bf02b577546482b6b5a6084d657"
+      "sha1": "3daacd3aafd92bf02b577546482b6b5a6084d657",
+      "ttsSha1": "cbc52dbfa4e4176bd891679322cf217cbb1f856e"
     },
     "zubat": {
       "file": "zubat.mp3",
-      "sha1": "0ba83dec4f06d5d499b4177cd39208e96cc18450"
+      "sha1": "0ba83dec4f06d5d499b4177cd39208e96cc18450",
+      "ttsSha1": "26f777b10f0dd29c9c064913e9819639a3466e9b"
     }
   },
   "count": 151,

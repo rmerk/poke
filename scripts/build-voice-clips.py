@@ -20,7 +20,6 @@ from __future__ import annotations
 import argparse
 import hashlib
 import json
-import re
 import shutil
 import subprocess
 import tempfile
@@ -28,6 +27,7 @@ from pathlib import Path
 
 from poke.api_client import record_to_pokemon_data
 from poke.entry import build_entry
+from poke.tts_text import tts_text
 
 ROOT = Path(__file__).resolve().parent.parent
 DB_PATH = ROOT / "data" / "offline" / "species_db.json"
@@ -36,30 +36,57 @@ MP3_KBPS = "24"
 MP3_RATE_KHZ = "16"
 
 
-# espeak/piper spell all-caps tokens letter by letter, and PokeAPI flavor text
-# keeps the old all-caps convention ("POKéMON", "MAGIKARP", "THUNDER WAVE").
-_ALLCAPS_RE = re.compile(r"\b([A-Z]{2,})('s|s)?\b")
-# "National No. 25" must read "Number", but only when a figure follows.
-_NUMBER_ABBR_RE = re.compile(r"\bNo\.\s*(?=\d)")
-# Any casing of Poke/Pokemon, with or without the accent.
-_POKEMON_RE = re.compile(r"\bPOK[EÉée]MON\b", re.IGNORECASE)
-_POKE_RE = re.compile(r"\bPOK[Éé]\b", re.IGNORECASE)
-# Title-casing this one yields "Ko"; it means "knock out".
-_KO_RE = re.compile(r"\bKO\b")
+def manifest_entry(narration: str, spoken: str, mp3_name: str) -> dict[str, str]:
+    """One manifest record. `sha1` tracks the narration template; `ttsSha1`
+    tracks the text the synthesizer actually reads, which is what the audio
+    is made of — without it a tts_text change leaves every hash intact and
+    stale clips ship green."""
+    return {
+        "file": mp3_name,
+        "sha1": hashlib.sha1(narration.encode("utf-8")).hexdigest(),
+        "ttsSha1": hashlib.sha1(spoken.encode("utf-8")).hexdigest(),
+    }
 
 
-def tts_text(narration: str) -> str:
-    """Normalize narration for the synthesizers (they read ASCII best)."""
-    s = narration.replace("→", " to ").replace("…", ".")
-    s = s.replace("♀", " female").replace("♂", " male")
-    # Before the accent is folded away, so "POKéMON" is caught as one token.
-    s = _POKEMON_RE.sub("Pokemon", s)
-    s = _POKE_RE.sub("Poke", s)
-    s = _KO_RE.sub("knock out", s)
-    s = _ALLCAPS_RE.sub(lambda m: m.group(1).title() + (m.group(2) or ""), s)
-    s = _NUMBER_ABBR_RE.sub("Number ", s)
-    s = s.replace("é", "e").replace("È", "E").replace("’", "'")
-    return " ".join(s.split())
+def refresh_manifest(manifest_path: Path, out_dir: Path, by_slug: dict[str, dict]) -> None:
+    """Recompute hashes from the clips already on disk, without re-synthesizing.
+
+    Piper is non-deterministic, so a full rebuild rewrites all 151 mp3s even
+    when the text is unchanged. This exists so a one-clip fix doesn't drag
+    150 gratuitous binary deltas into the repo.
+
+    It trusts that the on-disk audio matches the current text, so it prints
+    every hash it changes: a slug listed here whose clip you did NOT just
+    re-render is a stale clip, not a bookkeeping update.
+    """
+    if not manifest_path.exists():
+        raise SystemExit("--refresh-manifest needs an existing manifest.json")
+    manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
+    drifted, backfilled = [], []
+    for slug, record in sorted(by_slug.items()):
+        mp3 = out_dir / f"{slug}.mp3"
+        if not mp3.exists():
+            raise SystemExit(f"no clip for {slug} — render it before refreshing")
+        narration = build_entry(record_to_pokemon_data(record)).narration
+        entry = manifest_entry(narration, tts_text(narration), mp3.name)
+        previous = manifest["bySlug"].get(slug, {})
+        # A missing ttsSha1 is a manifest predating the field, not evidence the
+        # clip is stale; only a *differing* one means the audio no longer
+        # matches the text.
+        if "ttsSha1" not in previous:
+            backfilled.append(slug)
+        elif previous["ttsSha1"] != entry["ttsSha1"]:
+            drifted.append(slug)
+        manifest["bySlug"][slug] = entry
+    manifest["count"] = len(manifest["bySlug"])
+    manifest_path.write_text(json.dumps(manifest, indent=2, sort_keys=True) + "\n",
+                             encoding="utf-8")
+    print(f"refreshed {manifest['count']} manifest entries (no audio re-rendered)")
+    if backfilled:
+        print(f"backfilled ttsSha1 for {len(backfilled)} entries that predate the field")
+    if drifted:
+        print(f"TEXT DRIFTED for {len(drifted)}: {', '.join(drifted)}")
+        print("unless you just re-rendered these, their clips are STALE")
 
 
 def check_piper_runnable() -> None:
@@ -160,7 +187,17 @@ def main() -> None:
                     help="sox pitch shift toward the show's low register (0 = off)")
     ap.add_argument("--out-dir", type=Path, default=DEFAULT_OUT)
     ap.add_argument("--only", nargs="*", default=None, help="Limit to these slugs")
+    ap.add_argument("--refresh-manifest", action="store_true",
+                    help="Recompute manifest hashes from the clips already on "
+                         "disk instead of re-synthesizing; use after rendering "
+                         "a subset with --only")
     args = ap.parse_args()
+
+    payload_early = json.loads(DB_PATH.read_text(encoding="utf-8"))
+    if args.refresh_manifest:
+        out: Path = args.out_dir
+        refresh_manifest(out / "manifest.json", out, payload_early["bySlug"])
+        return
 
     engine = pick_engine(args.engine, args.piper_model, args.mbrola_voice)
     if engine == "mbrola":
@@ -196,9 +233,10 @@ def main() -> None:
             if record is None:
                 raise SystemExit(f"Unknown slug: {slug}")
             narration = build_entry(record_to_pokemon_data(record)).narration
+            spoken = tts_text(narration)
             raw_wav = tmp_dir / f"{slug}.raw.wav"
             fx_wav = tmp_dir / f"{slug}.fx.wav"
-            synth_wav(tts_text(narration), raw_wav, engine, args.piper_model,
+            synth_wav(spoken, raw_wav, engine, args.piper_model,
                       args.mbrola_voice)
             if has_sox:
                 robotize(raw_wav, fx_wav, args.pitch_cents)
@@ -206,10 +244,7 @@ def main() -> None:
                 fx_wav = raw_wav
             mp3 = out_dir / f"{slug}.mp3"
             encode_mp3(fx_wav, mp3)
-            manifest["bySlug"][slug] = {
-                "file": mp3.name,
-                "sha1": hashlib.sha1(narration.encode("utf-8")).hexdigest(),
-            }
+            manifest["bySlug"][slug] = manifest_entry(narration, spoken, mp3.name)
             print(f"[{i + 1}/{len(slugs)}] {slug} ({mp3.stat().st_size // 1024} KB)")
 
     manifest["count"] = len(manifest["bySlug"])

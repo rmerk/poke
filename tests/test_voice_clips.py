@@ -10,11 +10,18 @@ import pytest
 
 from poke.api_client import record_to_pokemon_data
 from poke.entry import build_entry
+from poke.tts_text import tts_text
 
 ROOT = Path(__file__).resolve().parent.parent
 AUDIO_DIR = ROOT / "web" / "data" / "audio"
 DB_PATH = ROOT / "data" / "offline" / "species_db.json"
 MANIFEST = AUDIO_DIR / "manifest.json"
+# The shipped render settings, per the Decision lock in docs/build-tradeoffs.md:
+# "Piper en_US-ryan-medium, --pitch-cents -100". Rendering with anything else
+# changes how the Pokedex sounds, so a rebuild on a machine with a different
+# toolchain must fail rather than quietly swap the voice mid-set.
+EXPECTED_ENGINE = "piper:en_US-ryan-medium"
+EXPECTED_PITCH_CENTS = -100
 
 
 @pytest.mark.skipif(not MANIFEST.exists(), reason="voice clips not built")
@@ -34,3 +41,37 @@ def test_clips_cover_all_species_with_fresh_narration() -> None:
             "rerun scripts/build-voice-clips.py"
         )
         assert (AUDIO_DIR / clips[slug]["file"]).exists(), f"missing mp3 for {slug}"
+
+
+@pytest.mark.skipif(not MANIFEST.exists(), reason="voice clips not built")
+def test_clips_match_the_text_actually_synthesized() -> None:
+    """Guard the normalization layer, not just the narration template.
+
+    tts_text() sits between narration and the synthesizer, so a pronunciation
+    fix there changes the audio while leaving every raw-narration hash intact.
+    That is how "DNA" shipped as "Dna": the clips were stale and CI was green.
+    """
+    payload = json.loads(DB_PATH.read_text(encoding="utf-8"))
+    manifest = json.loads(MANIFEST.read_text(encoding="utf-8"))
+    clips = manifest["bySlug"]
+
+    for slug, record in payload["bySlug"].items():
+        narration = build_entry(record_to_pokemon_data(record)).narration
+        digest = hashlib.sha1(tts_text(narration).encode("utf-8")).hexdigest()
+        assert clips[slug].get("ttsSha1") == digest, (
+            f"stale clip for {slug} — the text handed to the synthesizer "
+            "changed; rerun scripts/build-voice-clips.py"
+        )
+
+
+@pytest.mark.skipif(not MANIFEST.exists(), reason="voice clips not built")
+def test_clips_were_rendered_with_the_shipped_voice() -> None:
+    manifest = json.loads(MANIFEST.read_text(encoding="utf-8"))
+    assert manifest["engine"] == EXPECTED_ENGINE, (
+        f"clips were rendered with {manifest['engine']!r}, not "
+        f"{EXPECTED_ENGINE!r} — the Pokedex voice would change mid-set"
+    )
+    assert manifest["pitchCents"] == EXPECTED_PITCH_CENTS, (
+        f"clips were rendered at pitchCents={manifest['pitchCents']}, not "
+        f"{EXPECTED_PITCH_CENTS} — the voice would sit in a different register"
+    )
