@@ -9,4 +9,18 @@ echo "  On this Mac:  http://127.0.0.1:${PORT}"
 echo "  On iPhone:    http://${IP}:${PORT}"
 echo "Same LAN is enough — no internet required at runtime."
 echo "Open that URL in Safari on the A1533."
-exec python3 -m http.server "$PORT"
+# no-store on every response: iOS Safari caches js/ aggressively, and a stale
+# script silently masks edits while you iterate on the device.
+exec python3 -c '
+import sys
+from http.server import HTTPServer, SimpleHTTPRequestHandler
+
+class NoCacheHandler(SimpleHTTPRequestHandler):
+    def end_headers(self):
+        self.send_header("Cache-Control", "no-store, must-revalidate")
+        self.send_header("Pragma", "no-cache")
+        self.send_header("Expires", "0")
+        SimpleHTTPRequestHandler.end_headers(self)
+
+HTTPServer(("", int(sys.argv[1])), NoCacheHandler).serve_forever()
+' "$PORT"
