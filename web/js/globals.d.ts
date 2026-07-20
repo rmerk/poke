@@ -42,6 +42,24 @@ interface DexEntryView {
   attribution: string;
 }
 
+interface VoiceClipRecord {
+  file: string;
+  /** sha1 of the narration template output. */
+  sha1: string;
+  /** sha1 of `spoken` — the text the clip was actually rendered from. */
+  ttsSha1: string;
+  /** Normalized narration, built by poke/tts_text.py. */
+  spoken: string;
+}
+
+interface VoiceManifest {
+  version: number;
+  count: number;
+  engine: string;
+  pitchCents: number;
+  bySlug: { [slug: string]: VoiceClipRecord };
+}
+
 interface OcrExtractResult {
   text: string;
   rawText: string;

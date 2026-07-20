@@ -14,6 +14,43 @@ var DEX_PITCH = 0.5;
 /** @type {HTMLAudioElement | null} */
 var currentAudio = null;
 
+/** @type {Promise<VoiceManifest> | null} */
+var voiceManifestPromise = null;
+
+/**
+ * The manifest carries the same normalized text the clips were rendered from
+ * (see poke/tts_text.py), so the fallback speaks "Pokemon" and "Number 150"
+ * rather than the raw "POKéMON" / "No. 150" the synthesizer mangles. Loaded
+ * lazily: every species ships a clip, so this normally never fetches.
+ * @returns {Promise<VoiceManifest>}
+ */
+function loadVoiceManifest() {
+  if (voiceManifestPromise) return voiceManifestPromise;
+  voiceManifestPromise = fetch("data/audio/manifest.json").then(function (res) {
+    if (!res.ok) throw new Error("Missing voice manifest");
+    return res.json();
+  });
+  return voiceManifestPromise;
+}
+
+/**
+ * Resolves to the normalized line for `slug`, or `fallback` if the manifest
+ * is unreachable — never rejects, since the caller is already a fallback.
+ * @param {string} slug
+ * @param {string} fallback
+ * @returns {Promise<string>}
+ */
+function spokenTextFor(slug, fallback) {
+  return loadVoiceManifest()
+    .then(function (manifest) {
+      var record = manifest.bySlug[slug];
+      return (record && record.spoken) || fallback;
+    })
+    .catch(function () {
+      return fallback;
+    });
+}
+
 /**
  * iOS populates getVoices() asynchronously and voiceschanged is unreliable
  * on iOS 12, so query fresh on every speak() instead of caching a pick.
@@ -104,7 +141,7 @@ function speak(text, slug) {
   stopSpeaking();
   if (slug) {
     return speakClip(slug).catch(function () {
-      return speakSynth(text);
+      return spokenTextFor(slug, text).then(speakSynth);
     });
   }
   return speakSynth(text);

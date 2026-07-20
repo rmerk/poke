@@ -73,6 +73,8 @@ poke/                        Secondary Python pipeline (Mac / tests)
   identify.py                OCR text → match → resolved name (or None → search)
   api_client.py              Offline species_db lookup; optional live PokéAPI w/ cache
   entry.py                   Templated show-host DexEntry builder
+  tts_text.py                Narration → synthesizer text (all-caps, accents,
+                             "No." → "Number"); used by build-voice-clips.py
   tts.py                     Piper preferred, espeak-ng fallback (Mac/Pi only)
   ui.py                      Optional pygame bench UI (NOT used on the phone)
   gpio_input.py              Optional Raspberry Pi GPIO buttons (legacy/no-op off-Pi)
@@ -81,6 +83,8 @@ scripts/
   serve-web.sh               Serve web/ over LAN via python http.server (default :8080)
   build-offline-db.py        Rebuild species_db.json from PokéAPI (needs network ONCE)
   build-voice-clips.py       Re-render web/data/audio/ voice clips from the offline DB
+                             (--only <slug> for one clip, then --refresh-manifest
+                             to rehash the rest without re-rendering them)
                              (build-time only; piper > mbrola us2 > festival kal > espeak-ng.
                              Shipped clips: piper en_US-ryan-medium, --pitch-cents -100)
 
@@ -141,11 +145,21 @@ edit `data/species_names.json` then rerun this script — do not edit the DB by 
 - **The Pokédex voice is pre-rendered.** `web/data/audio/<slug>.mp3` clips (one
   robotic show-style voice, built by `scripts/build-voice-clips.py`) are the
   primary speech path; `speechSynthesis` (tuned robotic profile in `tts.js`) is
-  the fallback only. If narration templates or `species_db.json` change, rerun
-  the script — `tests/test_voice_clips.py` compares manifest narration hashes
-  and fails on stale clips. Rebuild with the same engine the clips were made
-  with; `manifest.json`'s `engine` field records it (currently
-  `piper:en_US-ryan-medium`), otherwise the voice silently changes mid-set.
+  the fallback, and it speaks `manifest.json`'s `spoken` field — the same
+  normalized text the clips were rendered from — so `tts_text` is **not**
+  reimplemented in JS. The manifest is fetched lazily, only when a clip fails,
+  so the normal path never loads it. Normalization has no runtime input (151
+  known species), so it stays at build time; do not port it to `web/js/`.
+  If narration templates, `poke/tts_text.py`, or
+  `species_db.json` change, rerun the script — `tests/test_voice_clips.py`
+  compares both the narration hash and `ttsSha1` (the hash of the text actually
+  handed to the synthesizer) and fails on stale clips. Rebuild with the same
+  engine the clips were made with; `manifest.json`'s `engine` field records it
+  and the test pins it to `piper:en_US-ryan-medium`, otherwise the voice
+  silently changes mid-set. Re-rendering needs `pip install -e ".[tts]"` plus a
+  voice model (`~/.piper/en_US-ryan-medium.onnx`); note a standalone x86_64
+  `piper` binary cannot load Homebrew's arm64 `libespeak-ng` on Apple Silicon,
+  which is what `check_piper_runnable()` catches.
 - **Attribution stays in the UI.** Every entry carries a PokéAPI + fan-demo
   attribution line. Don't remove it.
 - **Python types are strict.** mypy runs with `disallow_incomplete_defs`,
