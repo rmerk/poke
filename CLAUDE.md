@@ -145,7 +145,12 @@ edit `data/species_names.json` then rerun this script — do not edit the DB by 
 - **The Pokédex voice is pre-rendered.** `web/data/audio/<slug>.mp3` clips (one
   robotic show-style voice, built by `scripts/build-voice-clips.py`) are the
   primary speech path; `speechSynthesis` (tuned robotic profile in `tts.js`) is
-  the fallback only. If narration templates, `poke/tts_text.py`, or
+  the fallback, and it speaks `manifest.json`'s `spoken` field — the same
+  normalized text the clips were rendered from — so `tts_text` is **not**
+  reimplemented in JS. The manifest is fetched lazily, only when a clip fails,
+  so the normal path never loads it. Normalization has no runtime input (151
+  known species), so it stays at build time; do not port it to `web/js/`.
+  If narration templates, `poke/tts_text.py`, or
   `species_db.json` change, rerun the script — `tests/test_voice_clips.py`
   compares both the narration hash and `ttsSha1` (the hash of the text actually
   handed to the synthesizer) and fails on stale clips. Rebuild with the same

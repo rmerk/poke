@@ -40,11 +40,18 @@ def manifest_entry(narration: str, spoken: str, mp3_name: str) -> dict[str, str]
     """One manifest record. `sha1` tracks the narration template; `ttsSha1`
     tracks the text the synthesizer actually reads, which is what the audio
     is made of — without it a tts_text change leaves every hash intact and
-    stale clips ship green."""
+    stale clips ship green.
+
+    `spoken` ships the normalized text itself so web/js/tts.js can speak it on
+    the speechSynthesis fallback instead of reimplementing tts_text() in JS.
+    The normalization has no runtime input — 151 known species — so it belongs
+    at build time, like the clips themselves.
+    """
     return {
         "file": mp3_name,
         "sha1": hashlib.sha1(narration.encode("utf-8")).hexdigest(),
         "ttsSha1": hashlib.sha1(spoken.encode("utf-8")).hexdigest(),
+        "spoken": spoken,
     }
 
 
