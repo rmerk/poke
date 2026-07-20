@@ -4,6 +4,7 @@ Phase 0 research for a personal MVP: scan a physical TCG card, identify the Pok�
 
 **Change log:** Decision lock updated to **iPhone A1533 (iPhone 5s)** instead of Raspberry Pi Zero 2 W — owned phone-in-shell, built-in battery/camera/display/speaker.
 **Change log (TTS):** TTS decision updated from live `speechSynthesis` to **pre-rendered show-style clips** bundled in `web/data/audio/` (built offline by `scripts/build-voice-clips.py`), with `speechSynthesis` kept as fallback. Motivation: match the show's robotic Pokédex voice, which system voices can't reproduce and which must sound identical on every device. Runtime stays fully offline; the same build-once pattern as the species DB.
+**Change log (imagery):** The entry screen now shows a **bundled species render** per Pokémon (Pokémon HOME still-art, downscaled to a 256px box, `web/data/sprites/<slug>.png`), presented on a rotating "hologram" stage to evoke the show's Pokédex display. Built offline by `scripts/build-voice-clips.py`'s sibling `scripts/build-sprites.py`; same build-once-offline pattern as the DB and clips. A **true rotating 3D model** for all 1025 species was rejected: no free, offline-bundleable source of spinning-model frames exists at a sane size for a 1 GB / iOS 12 device, and it would break the offline-at-runtime lock. Missing renders fall back to the Poké Ball emblem — still never a broken image, still no network. Total bundle ~46 MB (web-only; not mirrored to the Mac `data/` copy).
 
 Sources consulted: [PokéAPI fair use](https://pokeapi.co/docs/v2), Apple device A1533 = iPhone 5s (max iOS 12.x), [Web Speech API](https://developer.mozilla.org/en-US/docs/Web/API/Web_Speech_API), Tesseract.js. Benchmarks below are **estimates** unless labeled otherwise.
 
@@ -175,6 +176,7 @@ Subsequent phases follow these unless a documented change is needed:
 | Camera | Built-in rear camera via photo capture |
 | Card ID approach | Tesseract.js OCR → fuzzy match → manual search |
 | Data source + cache | **Bundled offline full-species DB** (`web/data/offline/species_db.json`, all 1025); no live PokéAPI at runtime |
+| Species imagery | **Bundled 256px HOME renders** (`web/data/sprites/<slug>.png`, built offline via `scripts/build-sprites.py`) on a rotating stage; Poké Ball emblem fallback; no live sprite CDN. True rotating 3D models rejected (offline/size) |
 | Narration | Templated show-style (no LLM in MVP) |
 | TTS | **Bundled pre-rendered show-style clips** (`web/data/audio/`, rebuilt via `scripts/build-voice-clips.py` — Piper `en_US-ryan-medium` 1.5.0, `--pitch-cents -100`); `speechSynthesis` (robotic profile) as fallback |
 | UI runtime | **Static web app in Safari** (`web/`); Python retained for Mac tests only |

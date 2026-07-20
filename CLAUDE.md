@@ -59,6 +59,10 @@ web/                         PRIMARY offline Safari app
   jsconfig.json              tsc --checkJs config (strict)
   data/offline/species_db.json   Bundled species DB, all 1025 (phone copy)
   data/species_names.json        Species name list, generated (phone copy)
+  data/sprites/<slug>.png        Bundled species renders (Pokémon HOME art,
+                                 downscaled to 256px; phone only). Shown on the
+                                 entry screen's rotating stage; missing files
+                                 fall back to the Poké Ball emblem
   data/audio/                    Pre-rendered show-style voice clips (<slug>.mp3
                                  + manifest.json with narration hashes; phone only)
   vendor/tesseract/          Vendored Tesseract.js + WASM + eng.traineddata (no CDN)
@@ -82,6 +86,10 @@ poke/                        Secondary Python pipeline (Mac / tests)
 scripts/
   serve-web.sh               Serve web/ over LAN via python http.server (default :8080)
   build-offline-db.py        Rebuild species_db.json from PokéAPI (needs network ONCE)
+  build-sprites.py           Download + downscale web/data/sprites/ species renders
+                             (Pokémon HOME art → 256px PNG; needs network ONCE,
+                             reuses build-offline-db's JSON cache; --limit/--size/
+                             --refresh; missing renders skipped → emblem fallback)
   build-voice-clips.py       Re-render web/data/audio/ voice clips from the offline DB
                              (--only <slug> for one clip, then --refresh-manifest
                              to rehash the rest without re-rendering them)
@@ -243,7 +251,9 @@ binary is on PATH; CI installs it via the `[ocr]` extra + system package.
 **Adding/changing species data:** run `scripts/build-offline-db.py` (it pulls the
 species list from the API — nothing to hand-edit) → confirm **both**
 `species_db.json` and **both** `species_names.json` copies updated → run
-`scripts/build-voice-clips.py` (clips track the DB) → run `pytest`.
+`scripts/build-sprites.py` (new species need a `web/data/sprites/<slug>.png`
+render; existing files are skipped) → run `scripts/build-voice-clips.py` (clips
+track the DB) → run `pytest`.
 
 **Changing narration (`entry.js` / `entry.py`):** keep both in sync, then rerun
 `scripts/build-voice-clips.py` so the bundled clips speak the new text

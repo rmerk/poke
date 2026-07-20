@@ -416,10 +416,50 @@ input[type="search"]:focus {
   opacity: 0.32;
   filter: blur(26px);
 }
+
+/* Rotating holographic turntable the species stands on. */
+.stage {
+  position: absolute;
+  bottom: 20px;
+  width: 150px;
+  height: 44px;
+  border-radius: 50%;
+  border: 2px solid var(--accent);
+  border-bottom-color: transparent;
+  background:
+    radial-gradient(50% 120% at 50% 0%, var(--accent) 0%, rgba(0, 0, 0, 0) 70%);
+  opacity: 0.55;
+  transform: rotate(0deg);
+  animation: turntable 6s linear infinite;
+}
+@keyframes turntable {
+  to { transform: rotate(360deg); }
+}
+
 .portrait .pokeball.ghost {
   width: 118px;
   height: 118px;
   opacity: 0.9;
+  transition: opacity 0.25s;
+}
+
+/* Real bundled species render; hidden until it loads (else emblem shows). */
+.portrait .sprite {
+  position: absolute;
+  display: none;
+  width: auto;
+  height: 132px;
+  max-width: 76%;
+  object-fit: contain;
+  filter: drop-shadow(0 10px 12px rgba(0, 0, 0, 0.55));
+  animation: bob 3.4s ease-in-out infinite;
+}
+.portrait.has-sprite .pokeball.ghost { display: none; }
+.portrait.has-sprite .sprite { display: block; }
+
+@keyframes bob {
+  0%, 100% { transform: translateY(-4px); }
+  50% { transform: translateY(4px); }
 }
 .dexno {
   position: absolute;
@@ -647,5 +687,6 @@ footer {
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .screen, .scan-target .ring, .scan-line, .pokeball.spin { animation: none; }
+  .screen, .scan-target .ring, .scan-line, .pokeball.spin,
+  .stage, .portrait .sprite { animation: none; }
 }

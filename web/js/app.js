@@ -198,14 +198,43 @@
   }
 
   /**
-   * @param {DexEntryView} entry
+   * Swap in the bundled species render, falling back to the Poké Ball emblem if
+   * the image is missing (partial sprite set) or fails to decode. Keyed by slug
+   * so it survives display-name quirks (Nidoran♀, Farfetch'd, …).
+   * @param {string} slug
    * @returns {void}
    */
-  function renderEntry(entry) {
+  function loadSprite(slug) {
+    var portrait = mustEl("entry-portrait");
+    var img = mustImg("entry-sprite");
+    portrait.className = "portrait"; // reset to emblem until this one decodes
+    img.alt = "";
+    if (!slug) return;
+    var want = "data/sprites/" + slug + ".png";
+    img.onload = function () {
+      // A stale onload from a previous species can arrive late; only reveal if
+      // this is still the image we asked for.
+      if (img.getAttribute("src") === want) portrait.className = "portrait has-sprite";
+    };
+    img.onerror = function () {
+      if (img.getAttribute("src") === want) portrait.className = "portrait";
+    };
+    img.setAttribute("src", want);
+  }
+
+  /**
+   * @param {DexEntryView} entry
+   * @param {string} slug
+   * @returns {void}
+   */
+  function renderEntry(entry, slug) {
     var section = mustEl("screen-entry");
     var types = entry.typesLine.split(" / ");
     var primary = typeColor(types[0]);
     section.style.setProperty("--accent", primary);
+
+    loadSprite(slug);
+    mustImg("entry-sprite").alt = entry.title;
 
     mustEl("entry-title").textContent = entry.title;
     mustEl("entry-dexno").textContent = dexLabel(entry.dexNumber);
@@ -285,7 +314,7 @@
         return;
       case "entry":
         if (!prev || prev.screen !== "entry" || prev.entry !== state.entry) {
-          renderEntry(state.entry);
+          renderEntry(state.entry, state.slug);
         }
         return;
       case "error":
