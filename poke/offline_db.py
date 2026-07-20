@@ -1,4 +1,4 @@
-"""Offline Gen 1 species_db paths and writers."""
+"""Offline species_db paths and writers."""
 
 from __future__ import annotations
 

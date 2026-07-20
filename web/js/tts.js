@@ -26,7 +26,9 @@ var voiceManifestPromise = null;
  */
 function loadVoiceManifest() {
   if (voiceManifestPromise) return voiceManifestPromise;
-  voiceManifestPromise = fetch("data/audio/manifest.json").then(function (res) {
+  // ?v= matches api.js DATA_VERSION: the manifest tracks species_db.json, so a
+  // stale cached copy would mis-describe the clip set. Keep the two in step.
+  voiceManifestPromise = fetch("data/audio/manifest.json?v=2").then(function (res) {
     if (!res.ok) throw new Error("Missing voice manifest");
     return res.json();
   });

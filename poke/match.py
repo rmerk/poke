@@ -20,8 +20,28 @@ class MatchResult:
     candidates: tuple[tuple[str, float], ...]
 
 
+BUNDLED_NAMES = Path(__file__).resolve().parent.parent / "data" / "species_names.json"
+
+
 def default_species_names() -> list[str]:
-    """Minimal Gen 1–ish list for offline demos; full list can be generated via API."""
+    """The bundled species list (all National Dex species).
+
+    Reads data/species_names.json, which scripts/build-offline-db.py writes
+    alongside species_db.json. The embedded list below is a last-resort Gen 1
+    fallback for a checkout with no data/ directory -- it must not be allowed
+    to silently shadow the bundled file, or the matcher would quietly accept
+    only 151 names while the DB holds every species.
+    """
+    try:
+        data = json.loads(BUNDLED_NAMES.read_text(encoding="utf-8"))
+    except (OSError, ValueError):
+        return _embedded_gen1_names()
+    if isinstance(data, list) and data:
+        return [str(n) for n in data]
+    return _embedded_gen1_names()
+
+
+def _embedded_gen1_names() -> list[str]:
     return [
         "Bulbasaur",
         "Ivysaur",
@@ -186,7 +206,11 @@ def load_species_names(config: dict[str, Any]) -> list[str]:
             return [str(n) for n in data]
     names = default_species_names()
     path.parent.mkdir(parents=True, exist_ok=True)
-    path.write_text(json.dumps(names, indent=2) + "\n", encoding="utf-8")
+    # ensure_ascii=False keeps "Flabébé"/"Nidoran♀" readable and byte-identical
+    # to what scripts/build-offline-db.py writes.
+    path.write_text(
+        json.dumps(names, ensure_ascii=False, indent=2) + "\n", encoding="utf-8"
+    )
     return names
 
 

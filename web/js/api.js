@@ -1,5 +1,18 @@
 /** Offline Pokédex DB — no network at runtime. */
 
+/**
+ * Cache tag for the bundled data files. Bump whenever species_db.json changes.
+ *
+ * There is no build step and no service worker, so these files are fetched from
+ * a stable URL and Safari will happily keep serving a previously cached copy —
+ * observed holding a stale 151-species DB on a fresh page load even with
+ * `Cache-Control: no-store` from the server. Without this tag a phone that ran
+ * an older build can silently keep the old species list after an update.
+ * `fetch(..., {cache:"reload"})` would also work but is not dependable on
+ * iOS 12 Safari; a query string is.
+ */
+var DATA_VERSION = "2";
+
 /** @type {Promise<SpeciesDbPayload> | null} */
 var dbPromise = null;
 
@@ -8,7 +21,7 @@ var dbPromise = null;
  */
 function loadDb() {
   if (dbPromise) return dbPromise;
-  dbPromise = fetch("data/offline/species_db.json")
+  dbPromise = fetch("data/offline/species_db.json?v=" + DATA_VERSION)
     .then(function (res) {
       if (!res.ok) throw new Error("Missing offline species_db.json");
       return res.json();

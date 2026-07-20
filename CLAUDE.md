@@ -13,7 +13,7 @@ static **Safari web app**, housed in a 3D-printed Pokédex shell. The App
 Store / native path was rejected because iOS 12 tooling is painful in 2026 (see
 `docs/build-tradeoffs.md`).
 
-**Everything runs fully offline at runtime.** No PokéAPI, no CDN. Gen 1 species
+**Everything runs fully offline at runtime.** No PokéAPI, no CDN. All National
 data and the Tesseract OCR engine are bundled into the repo. The network is only
 touched *once*, offline, when rebuilding the bundled DB.
 
@@ -37,7 +37,7 @@ on a Mac. Do **not** assume Python changes reach the phone — they don't.
 The pipeline is the same on both sides:
 
 ```
-photo → crop name band → OCR (Tesseract) → fuzzy match to Gen 1 names
+photo → crop name band → OCR (Tesseract) → fuzzy match to species names
      → if confident: look up species in offline DB → build show-host entry → speak
      → if NOT confident: open search UI (never a silent wrong ID)
 ```
@@ -57,8 +57,8 @@ web/                         PRIMARY offline Safari app
     tts.js       → PokeTts   Bundled voice clips (audio) + speechSynthesis fallback
     globals.d.ts             Shared TS types for checkJs
   jsconfig.json              tsc --checkJs config (strict)
-  data/offline/species_db.json   Bundled Gen 1 DB (phone copy)
-  data/species_names.json        Species name list (phone copy)
+  data/offline/species_db.json   Bundled species DB, all 1025 (phone copy)
+  data/species_names.json        Species name list, generated (phone copy)
   data/audio/                    Pre-rendered show-style voice clips (<slug>.mp3
                                  + manifest.json with narration hashes; phone only)
   vendor/tesseract/          Vendored Tesseract.js + WASM + eng.traineddata (no CDN)
@@ -69,7 +69,7 @@ poke/                        Secondary Python pipeline (Mac / tests)
   config.py                  Loads config.yaml, path resolution
   capture.py                 Camera capture (OpenCV) or fixture load
   ocr.py                     OpenCV preprocess + pytesseract name extraction
-  match.py                   rapidfuzz multi-scorer match; default Gen 1 name list
+  match.py                   rapidfuzz multi-scorer match; loads bundled name list
   identify.py                OCR text → match → resolved name (or None → search)
   api_client.py              Offline species_db lookup; optional live PokéAPI w/ cache
   entry.py                   Templated show-host DexEntry builder
@@ -88,8 +88,8 @@ scripts/
                              (build-time only; piper > mbrola us2 > festival kal > espeak-ng.
                              Shipped clips: piper en_US-ryan-medium, --pitch-cents -100)
 
-data/offline/species_db.json Bundled Gen 1 DB (Mac copy — mirror of web/ copy)
-data/species_names.json      Species name list (Mac copy)
+data/offline/species_db.json Bundled species DB, all 1025 (Mac copy — mirror of web/)
+data/species_names.json      Species name list, generated (Mac copy)
 config.yaml                  Config for the PYTHON pipeline only (not the web app)
 docs/build-tradeoffs.md      DECISION LOCK — read before changing the stack
 tests/                       pytest suite for the Python pipeline
@@ -108,7 +108,7 @@ Shape (see `web/js/globals.d.ts` for the full type):
 ```json
 {
   "version": 1,
-  "count": 151,
+  "count": 1025,
   "bySlug": { "pikachu": { "name": "pikachu", "displayName": "Pikachu",
                            "types": ["Electric"], "heightM": 0.4, "weightKg": 6.0,
                            "abilities": [...], "category": "Mouse Pokémon",
@@ -118,9 +118,29 @@ Shape (see `web/js/globals.d.ts` for the full type):
 ```
 
 **To regenerate** (the only time the network is used): `python3 scripts/build-offline-db.py`.
-It reads `data/species_names.json`, fetches from PokéAPI, and writes **both**
-copies via `poke/offline_db.py:write_species_db`. If you change species coverage,
-edit `data/species_names.json` then rerun this script — do not edit the DB by hand.
+It enumerates every species from PokéAPI's `pokemon-species` index and writes
+**both** `species_db.json` copies via `poke/offline_db.py:write_species_db`, plus
+both `species_names.json` copies. Do not edit either artifact by hand.
+
+`data/species_names.json` is **generated output, not input** — the script drives
+off the API index, so coverage changes come from the API, not from editing that
+file. It is still the fuzzy-match candidate list at runtime.
+
+Two API details the script depends on (both have bitten this code):
+
+- `GET /pokemon/{species-slug}` **404s** whenever the default form is named
+  differently from the species (`deoxys` → `deoxys-normal`, `wormadam` →
+  `wormadam-plant`, `urshifu` → `urshifu-single-strike`). Always resolve the
+  default variety from the species record.
+- Display names come from the species record's localized `names`, which is why
+  "Ho-Oh", "Type: Null", "Flabébé", "Farfetch’d" and "Nidoran♀" are correct
+  without a hand-maintained special-case table. Note the API uses a **typographic
+  apostrophe** (U+2019) in Farfetch’d/Sirfetch’d; `poke/tts_text.py` already
+  folds it, along with ♀/♂ → "female"/"male" and é → e.
+
+Responses cache under `data/cache/api/` (gitignored) so a re-run after a network
+blip resumes instead of refetching ~2600 URLs. Use `--refresh` to bypass the
+cache, `--limit N` to smoke-test.
 
 ## Key conventions & invariants
 
@@ -148,18 +168,26 @@ edit `data/species_names.json` then rerun this script — do not edit the DB by 
   the fallback, and it speaks `manifest.json`'s `spoken` field — the same
   normalized text the clips were rendered from — so `tts_text` is **not**
   reimplemented in JS. The manifest is fetched lazily, only when a clip fails,
-  so the normal path never loads it. Normalization has no runtime input (151
-  known species), so it stays at build time; do not port it to `web/js/`.
+  so the normal path never loads it. Normalization has no runtime input (a fixed
+  set of known species), so it stays at build time; do not port it to `web/js/`.
   If narration templates, `poke/tts_text.py`, or
   `species_db.json` change, rerun the script — `tests/test_voice_clips.py`
   compares both the narration hash and `ttsSha1` (the hash of the text actually
   handed to the synthesizer) and fails on stale clips. Rebuild with the same
-  engine the clips were made with; `manifest.json`'s `engine` field records it
-  and the test pins it to `piper:en_US-ryan-medium`, otherwise the voice
-  silently changes mid-set. Re-rendering needs `pip install -e ".[tts]"` plus a
-  voice model (`~/.piper/en_US-ryan-medium.onnx`); note a standalone x86_64
-  `piper` binary cannot load Homebrew's arm64 `libespeak-ng` on Apple Silicon,
-  which is what `check_piper_runnable()` catches.
+  engine the clips were made with; `manifest.json` records `engine`
+  (`piper:en_US-ryan-medium`) **and** `engineVersion`, both pinned by the test.
+  The version matters: piper 1.5.0 renders the same model ~2% faster than the
+  1.x binary the first clip set used, which a bare engine label cannot detect.
+  Re-rendering needs `pip install -e ".[tts]"` plus a voice model
+  (`~/.piper/en_US-ryan-medium.onnx`).
+
+  **PATH trap:** the working piper is the venv's (`.venv/bin/piper`, the
+  `piper-tts` wheel). A stale standalone `~/.local/bin/piper` can sit earlier on
+  PATH and is x86_64, so it cannot load Homebrew's arm64 `libespeak-ng` on Apple
+  Silicon — `check_piper_runnable()` catches it, but the fix is to activate the
+  venv (or prepend `.venv/bin` to PATH) before rendering. Note the script
+  resolves `piper` from PATH, so running `./.venv/bin/python` alone is *not*
+  enough.
 - **Attribution stays in the UI.** Every entry carries a PokéAPI + fan-demo
   attribution line. Don't remove it.
 - **Python types are strict.** mypy runs with `disallow_incomplete_defs`,
@@ -212,9 +240,10 @@ binary is on PATH; CI installs it via the `[ocr]` extra + system package.
 
 ## When you change things — checklists
 
-**Adding/changing species data:** edit `data/species_names.json` → run
-`scripts/build-offline-db.py` → confirm **both** `species_db.json` copies updated
-→ run `scripts/build-voice-clips.py` (clips track the DB) → run `pytest`.
+**Adding/changing species data:** run `scripts/build-offline-db.py` (it pulls the
+species list from the API — nothing to hand-edit) → confirm **both**
+`species_db.json` and **both** `species_names.json` copies updated → run
+`scripts/build-voice-clips.py` (clips track the DB) → run `pytest`.
 
 **Changing narration (`entry.js` / `entry.py`):** keep both in sync, then rerun
 `scripts/build-voice-clips.py` so the bundled clips speak the new text

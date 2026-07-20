@@ -66,9 +66,9 @@ Sources consulted: [PokéAPI fair use](https://pokeapi.co/docs/v2), Apple device
 | Option | Freshness | Offline | Fair use | Effort |
 |--------|-----------|---------|----------|--------|
 | PokéAPI live / localStorage | 4 | 1–4 | Cache required | 3 |
-| **Bundled Gen 1 `species_db.json`** | 2 | **5** | Snapshot OK | 3 |
+| **Bundled `species_db.json`** | 2 | **5** | Snapshot OK | 3 |
 
-**Pick (locked):** Bundled offline Gen 1 DB at `web/data/offline/species_db.json` (and `data/offline/species_db.json` for Mac). **No live PokéAPI at runtime.** Rebuild with `scripts/build-offline-db.py` when online if the list changes. Attribution in UI.
+**Pick (locked):** Bundled offline DB at `web/data/offline/species_db.json` (and `data/offline/species_db.json` for Mac), covering **all National Dex species** (1025 as of Gen 9; originally Gen 1 only). **No live PokéAPI at runtime.** Rebuild with `scripts/build-offline-db.py` when online. Attribution in UI.
 
 ---
 
@@ -133,7 +133,7 @@ Sources consulted: [PokéAPI fair use](https://pokeapi.co/docs/v2), Apple device
 
 | | Stack |
 |--|--------|
-| **Primary MVP** | **iPhone A1533 (5s)** + Safari web app + **offline** Gen 1 DB + vendored Tesseract.js + fuzzy match + templated narration + `speechSynthesis` + phone battery |
+| **Primary MVP** | **iPhone A1533 (5s)** + Safari web app + **offline** full-species DB + vendored Tesseract.js + fuzzy match + templated narration + `speechSynthesis` + phone battery |
 | **Runner-up** | Pi Zero 2 W + pygame (previous lock) if phone path fails |
 | **Defer** | Native App Store app, full TCG ID, cloud vision/LLM, CAD, LEDs, voice commands |
 
@@ -174,9 +174,9 @@ Subsequent phases follow these unless a documented change is needed:
 | Display / orientation | Built-in 4″ Retina (portrait primary; CSS for narrow viewport) |
 | Camera | Built-in rear camera via photo capture |
 | Card ID approach | Tesseract.js OCR → fuzzy match → manual search |
-| Data source + cache | **Bundled offline Gen 1 DB** (`web/data/offline/species_db.json`); no live PokéAPI at runtime |
+| Data source + cache | **Bundled offline full-species DB** (`web/data/offline/species_db.json`, all 1025); no live PokéAPI at runtime |
 | Narration | Templated show-style (no LLM in MVP) |
-| TTS | **Bundled pre-rendered show-style clips** (`web/data/audio/`, rebuilt via `scripts/build-voice-clips.py` — Piper `en_US-ryan-medium`, `--pitch-cents -100`); `speechSynthesis` (robotic profile) as fallback |
+| TTS | **Bundled pre-rendered show-style clips** (`web/data/audio/`, rebuilt via `scripts/build-voice-clips.py` — Piper `en_US-ryan-medium` 1.5.0, `--pitch-cents -100`); `speechSynthesis` (robotic profile) as fallback |
 | UI runtime | **Static web app in Safari** (`web/`); Python retained for Mac tests only |
 | Power | **iPhone battery** |
 | Network | **Offline required** — vendored OCR + local species DB; LAN-only serve OK |

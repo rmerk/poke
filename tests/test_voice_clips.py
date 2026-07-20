@@ -22,6 +22,10 @@ MANIFEST = AUDIO_DIR / "manifest.json"
 # toolchain must fail rather than quietly swap the voice mid-set.
 EXPECTED_ENGINE = "piper:en_US-ryan-medium"
 EXPECTED_PITCH_CENTS = -100
+# The model name alone does not pin the sound. Piper 1.5.0 renders the same
+# model ~2% faster than the 1.x binary the original 151 clips were built with,
+# so the version is part of the voice, not just build trivia.
+EXPECTED_ENGINE_VERSION = "1.5.0"
 
 
 @pytest.mark.skipif(not MANIFEST.exists(), reason="voice clips not built")
@@ -74,4 +78,8 @@ def test_clips_were_rendered_with_the_shipped_voice() -> None:
     assert manifest["pitchCents"] == EXPECTED_PITCH_CENTS, (
         f"clips were rendered at pitchCents={manifest['pitchCents']}, not "
         f"{EXPECTED_PITCH_CENTS} — the voice would sit in a different register"
+    )
+    assert manifest.get("engineVersion") == EXPECTED_ENGINE_VERSION, (
+        f"clips were rendered with piper {manifest.get('engineVersion')!r}, not "
+        f"{EXPECTED_ENGINE_VERSION!r} — pacing drifts between piper versions"
     )

@@ -15,7 +15,7 @@ class DexEntry:
     height_weight: str
     narration: str
     facts: tuple[str, ...]
-    attribution: str = "Data: PokéAPI snapshot (offline Gen 1). Fan demo only."
+    attribution: str = "Data: PokéAPI snapshot (offline). Fan demo only."
 
 
 def build_entry(data: PokemonData) -> DexEntry:

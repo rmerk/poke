@@ -86,6 +86,13 @@ def refresh_manifest(manifest_path: Path, out_dir: Path, by_slug: dict[str, dict
             drifted.append(slug)
         manifest["bySlug"][slug] = entry
     manifest["count"] = len(manifest["bySlug"])
+    # Same rule as ttsSha1 above: a *missing* engineVersion is a manifest that
+    # predates the field, so stamp this machine's piper. A differing one is left
+    # alone — overwriting it would erase exactly the drift the field exists to
+    # catch, and only a real re-render can honestly change it.
+    if "engineVersion" not in manifest and str(manifest.get("engine", "")).startswith("piper"):
+        manifest["engineVersion"] = piper_version()
+        print(f"backfilled engineVersion={manifest['engineVersion']}")
     manifest_path.write_text(json.dumps(manifest, indent=2, sort_keys=True) + "\n",
                              encoding="utf-8")
     print(f"refreshed {manifest['count']} manifest entries (no audio re-rendered)")
@@ -112,6 +119,22 @@ def check_piper_runnable() -> None:
             + "\nInstall a piper matching this machine's architecture, or put a "
             "working one earlier on PATH."
         )
+
+
+def piper_version() -> str:
+    """Version of the piper-tts package driving the render.
+
+    The model name alone does not pin the sound: piper 1.5.0 renders the same
+    model ~2% faster than the 1.x binary the first clip set was built with
+    (measured on identical text, silence-trimmed). Recording the version lets
+    tests catch that drift, which a bare "piper:<model>" label cannot.
+    """
+    try:
+        from importlib.metadata import version
+
+        return version("piper-tts")
+    except Exception:  # noqa: BLE001 - best effort; unknown is still recorded
+        return "unknown"
 
 
 def synth_wav(
@@ -229,6 +252,7 @@ def main() -> None:
     out_dir.mkdir(parents=True, exist_ok=True)
     manifest_path = out_dir / "manifest.json"
     manifest: dict = {"version": 1, "engine": engine_label, "pitchCents": args.pitch_cents,
+                      "engineVersion": piper_version() if engine == "piper" else "n/a",
                       "bySlug": {}}
     if manifest_path.exists() and args.only:
         manifest = json.loads(manifest_path.read_text(encoding="utf-8"))

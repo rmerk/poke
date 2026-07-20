@@ -1,69 +1,140 @@
 #!/usr/bin/env python3
-"""Rebuild Gen 1 species_db.json for web/ and data/ from PokéAPI (needs network)."""
+"""Rebuild species_db.json for web/ and data/ from PokéAPI (needs network).
+
+Covers every National Dex species the API knows about (1025 as of Gen 9).
+
+Two API details drive the shape of this script:
+
+1. ``/pokemon/{species-slug}`` 404s whenever the default form is named
+   differently from the species (deoxys -> deoxys-normal, wormadam ->
+   wormadam-plant, urshifu -> urshifu-single-strike, ...). Always resolve the
+   default variety from the species record instead of guessing the URL.
+2. The species record carries official localized names, so display names like
+   "Ho-Oh", "Type: Null", "Flabébé", "Farfetch'd" and "Nidoran♀" come straight
+   from the API. Do not hand-maintain a special-case table for them.
+
+Responses are cached under data/cache/api (gitignored) so a re-run after a
+network blip resumes instead of refetching ~3000 URLs. Pass --refresh to ignore
+the cache.
+"""
 
 from __future__ import annotations
 
+import argparse
+import hashlib
 import json
 import time
+import unicodedata
+import urllib.error
 import urllib.request
 from pathlib import Path
+from typing import Any
 
 from poke.offline_db import default_species_db_paths, write_species_db
 
 ROOT = Path(__file__).resolve().parent.parent
-NAMES_PATH = ROOT / "data" / "species_names.json"
+NAMES_PATHS = [ROOT / "data" / "species_names.json", ROOT / "web" / "data" / "species_names.json"]
+CACHE_DIR = ROOT / "data" / "cache" / "api"
+SPECIES_INDEX = "https://pokeapi.co/api/v2/pokemon-species?limit=100000"
 UA = {"User-Agent": "pocket-pokedex/0.1 (offline warm)"}
 
 
-def get(url: str) -> dict:
-    req = urllib.request.Request(url, headers=UA)
-    with urllib.request.urlopen(req, timeout=30) as r:
-        data = json.loads(r.read().decode())
-    if not isinstance(data, dict):
-        raise ValueError(f"Expected JSON object from {url}")
-    return data
+def get(url: str, *, refresh: bool = False, retries: int = 3) -> dict[str, Any]:
+    """Fetch JSON with an on-disk cache so long runs are resumable."""
+    key = hashlib.sha1(url.encode("utf-8")).hexdigest()
+    cached = CACHE_DIR / f"{key}.json"
+    if cached.exists() and not refresh:
+        data = json.loads(cached.read_text(encoding="utf-8"))
+        if isinstance(data, dict):
+            return data
 
-
-def api_slug(name: str) -> str:
-    special = {
-        "Farfetch'd": "farfetchd",
-        "Mr. Mime": "mr-mime",
-        "Nidoran♀": "nidoran-f",
-        "Nidoran♂": "nidoran-m",
-    }
-    if name in special:
-        return special[name]
-    s = name.strip().lower().replace(".", "").replace("'", "").replace(" ", "-")
-    return s
+    last: Exception | None = None
+    for attempt in range(retries):
+        try:
+            req = urllib.request.Request(url, headers=UA)
+            with urllib.request.urlopen(req, timeout=30) as r:
+                data = json.loads(r.read().decode())
+            if not isinstance(data, dict):
+                raise ValueError(f"Expected JSON object from {url}")
+            CACHE_DIR.mkdir(parents=True, exist_ok=True)
+            cached.write_text(json.dumps(data), encoding="utf-8")
+            return data
+        except Exception as exc:  # noqa: BLE001 - retried, then surfaced
+            last = exc
+            time.sleep(1.0 * (attempt + 1))
+    raise RuntimeError(f"Failed to fetch {url}: {last}")
 
 
 def title(name: str) -> str:
     return name.replace("-", " ").title()
 
 
-def walk_evo(node: dict, names_out: list[str]) -> None:
+def english(entries: list[dict[str, Any]], field: str) -> str | None:
+    for e in entries:
+        if (e.get("language") or {}).get("name") == "en":
+            value = e.get(field)
+            if value:
+                return str(value)
+    return None
+
+
+def ascii_key(name: str) -> str:
+    """Accent- and punctuation-stripped alias so OCR can reach odd names.
+
+    "Flabébé" -> "flabebe", "Farfetch'd" -> "farfetchd", "Type: Null" ->
+    "type null", "Nidoran♀" -> "nidoran".
+    """
+    decomposed = unicodedata.normalize("NFKD", name)
+    stripped = "".join(c for c in decomposed if not unicodedata.combining(c))
+    kept = [c if (c.isalnum() or c.isspace()) else " " for c in stripped]
+    return " ".join("".join(kept).split()).casefold()
+
+
+def collect_evo_slugs(node: dict[str, Any], out: list[str]) -> None:
     if not node:
         return
-    sp = (node.get("species") or {}).get("name")
-    if sp:
-        names_out.append(title(sp))
+    slug = (node.get("species") or {}).get("name")
+    if slug:
+        out.append(str(slug))
     for child in node.get("evolves_to") or []:
-        walk_evo(child, names_out)
+        collect_evo_slugs(child, out)
 
 
-def main() -> None:
-    names = json.loads(NAMES_PATH.read_text(encoding="utf-8"))
-    by_slug: dict[str, dict] = {}
+def build(limit: int | None, refresh: bool, delay: float) -> dict[str, Any]:
+    index = get(SPECIES_INDEX, refresh=refresh)
+    results = index.get("results") or []
+    if limit:
+        results = results[:limit]
+    total = len(results)
+    print(f"building {total} species")
+
+    by_slug: dict[str, dict[str, Any]] = {}
     aliases: dict[str, str] = {}
+    evo_chains: dict[str, list[str]] = {}
+    evo_for_slug: dict[str, str] = {}
 
-    for i, name in enumerate(names):
-        slug = api_slug(name)
-        pokemon = get(f"https://pokeapi.co/api/v2/pokemon/{slug}")
-        species = get(pokemon["species"]["url"])
-        evo = None
-        evo_url = (species.get("evolution_chain") or {}).get("url")
-        if evo_url:
-            evo = get(evo_url)
+    for i, entry in enumerate(results):
+        slug = str(entry["name"])
+        species = get(str(entry["url"]), refresh=refresh)
+
+        default_url: str | None = None
+        for variety in species.get("varieties") or []:
+            if variety.get("is_default"):
+                default_url = ((variety.get("pokemon") or {}).get("url")) or None
+                break
+        if not default_url:
+            print(f"  !! {slug}: no default variety, skipped")
+            continue
+        pokemon = get(default_url, refresh=refresh)
+
+        chain_url = (species.get("evolution_chain") or {}).get("url")
+        if chain_url:
+            chain_url = str(chain_url)
+            if chain_url not in evo_chains:
+                names: list[str] = []
+                collect_evo_slugs(get(chain_url, refresh=refresh).get("chain") or {}, names)
+                evo_chains[chain_url] = names
+            evo_for_slug[slug] = chain_url
 
         types = [
             title(t["type"]["name"])
@@ -74,46 +145,26 @@ def main() -> None:
             for a in pokemon.get("abilities", [])
             if not a.get("is_hidden")
         ] or [
-            title(a["ability"]["name"].replace("-", " "))
-            for a in pokemon.get("abilities", [])
+            title(a["ability"]["name"].replace("-", " ")) for a in pokemon.get("abilities", [])
         ]
 
-        category = "Pokémon"
-        for g in species.get("genera", []):
-            if g.get("language", {}).get("name") == "en":
-                category = g.get("genus") or category
-                break
+        display = english(species.get("names") or [], "name") or title(slug)
+        category = english(species.get("genera") or [], "genus") or "Pokémon"
 
-        flavor = "No Pokédex entry available."
-        for ft in species.get("flavor_text_entries", []):
-            if ft.get("language", {}).get("name") == "en":
-                flavor = " ".join(
-                    (ft.get("flavor_text") or "").replace("\n", " ").replace("\f", " ").split()
-                )
-                break
-
-        evo_names: list[str] = []
-        if evo:
-            walk_evo(evo.get("chain") or {}, evo_names)
-        if len(evo_names) <= 1:
-            evo_note = (
-                f"{evo_names[0]} does not evolve." if evo_names else "Evolution data unavailable."
-            )
-        else:
-            evo_note = "Evolution: " + " → ".join(evo_names) + "."
-
-        dex = None
-        for entry in species.get("pokedex_numbers", []):
-            if entry.get("pokedex", {}).get("name") == "national":
-                dex = entry.get("entry_number")
-                break
-
-        display = (
-            name
-            if "Nidoran" in name or name in ("Farfetch'd", "Mr. Mime")
-            else title(pokemon["name"])
+        flavor_raw = english(species.get("flavor_text_entries") or [], "flavor_text")
+        flavor = (
+            " ".join(flavor_raw.replace("\n", " ").replace("\f", " ").split())
+            if flavor_raw
+            else "No Pokédex entry available."
         )
-        record = {
+
+        dex: int | None = None
+        for pd in species.get("pokedex_numbers", []):
+            if (pd.get("pokedex") or {}).get("name") == "national":
+                dex = pd.get("entry_number")
+                break
+
+        by_slug[slug] = {
             "name": slug,
             "displayName": display,
             "types": types,
@@ -122,21 +173,59 @@ def main() -> None:
             "abilities": abilities,
             "category": category,
             "flavorText": flavor,
-            "evolutionNote": evo_note,
+            "evolutionNote": "",  # filled in once every display name is known
             "dexNumber": dex,
         }
-        by_slug[slug] = record
-        aliases[display.casefold()] = slug
-        aliases[name.casefold()] = slug
-        aliases[slug] = slug
-        print(f"[{i + 1}/{len(names)}] {display}")
-        time.sleep(0.05)
+        for alias in (slug, display.casefold(), ascii_key(display)):
+            if alias:
+                aliases[alias] = slug
 
-    payload = {"version": 1, "count": len(by_slug), "bySlug": by_slug, "aliases": aliases}
+        if (i + 1) % 50 == 0 or i + 1 == total:
+            print(f"[{i + 1}/{total}] {display}")
+        time.sleep(delay)
+
+    # Second pass: evolution notes need display names for species that may not
+    # have been fetched yet when their chain was first seen.
+    def show(s: str) -> str:
+        record = by_slug.get(s)
+        return str(record["displayName"]) if record else title(s)
+
+    for slug, record in by_slug.items():
+        chain_url = evo_for_slug.get(slug)
+        names = evo_chains.get(chain_url, []) if chain_url else []
+        shown = [show(s) for s in names]
+        if len(shown) <= 1:
+            record["evolutionNote"] = (
+                f"{shown[0]} does not evolve." if shown else "Evolution data unavailable."
+            )
+        else:
+            record["evolutionNote"] = "Evolution: " + " → ".join(shown) + "."
+
+    return {"version": 1, "count": len(by_slug), "bySlug": by_slug, "aliases": aliases}
+
+
+def main() -> None:
+    ap = argparse.ArgumentParser(description=__doc__)
+    ap.add_argument("--limit", type=int, default=None, help="Only build the first N species")
+    ap.add_argument("--refresh", action="store_true", help="Ignore the on-disk response cache")
+    ap.add_argument("--delay", type=float, default=0.05, help="Seconds to sleep between species")
+    args = ap.parse_args()
+
+    payload = build(args.limit, args.refresh, args.delay)
+    if not payload["bySlug"]:
+        raise SystemExit("no species built")
+
     paths = default_species_db_paths(ROOT)
     write_species_db(payload, paths)
     for path in paths:
-        print(f"wrote {path} ({path.stat().st_size} bytes, {len(by_slug)} species)")
+        print(f"wrote {path} ({path.stat().st_size} bytes, {payload['count']} species)")
+
+    names = [str(r["displayName"]) for r in payload["bySlug"].values()]
+    body = json.dumps(names, ensure_ascii=False, indent=2) + "\n"
+    for path in NAMES_PATHS:
+        path.parent.mkdir(parents=True, exist_ok=True)
+        path.write_text(body, encoding="utf-8")
+        print(f"wrote {path} ({len(names)} names)")
 
 
 if __name__ == "__main__":
