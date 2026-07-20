@@ -26,9 +26,11 @@ var voiceManifestPromise = null;
  */
 function loadVoiceManifest() {
   if (voiceManifestPromise) return voiceManifestPromise;
-  // ?v= matches api.js DATA_VERSION: the manifest tracks species_db.json, so a
-  // stale cached copy would mis-describe the clip set. Keep the two in step.
-  voiceManifestPromise = fetch("data/audio/manifest.json?v=2").then(function (res) {
+  // The manifest tracks species_db.json, so a stale cached copy would
+  // mis-describe the clip set. Share api.js's tag rather than repeating it —
+  // a second literal here would drift the next time it is bumped.
+  var url = "data/audio/manifest.json?v=" + PokeApi.dataVersion;
+  voiceManifestPromise = fetch(url).then(function (res) {
     if (!res.ok) throw new Error("Missing voice manifest");
     return res.json();
   });

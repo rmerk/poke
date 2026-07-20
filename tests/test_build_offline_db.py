@@ -1,4 +1,4 @@
-"""build-offline-db writes the Gen 1 snapshot to both Mac and web paths."""
+"""build-offline-db writes the species snapshot to both Mac and web paths."""
 
 from __future__ import annotations
 

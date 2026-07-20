@@ -2,7 +2,7 @@
 
 Personal MVP for an **iPhone A1533 (iPhone 5s)** in a 3D-printed shell: scan a TCG card, identify the **species**, show a show-host Pokédex entry, and speak it.
 
-**Runs fully offline** — no PokéAPI, no CDN at runtime. Gen 1 data and Tesseract OCR assets are bundled.
+**Runs fully offline** — no PokéAPI, no CDN at runtime. All 1025 National Dex species, the pre-rendered voice clips, and the Tesseract OCR assets are bundled.
 
 Stack lock: [`docs/build-tradeoffs.md`](docs/build-tradeoffs.md).
 
@@ -18,15 +18,15 @@ cd /Users/rchoi/Personal/poke
 ```
 
 Local: phone + Mac on the **same LAN**. Safari → `http://<mac-lan-ip>:8080`  
-Pages: Safari → the live URL (HTTPS). Runtime still uses only bundled Gen 1 data + Tesseract (no PokéAPI / CDN).
+Pages: Safari → the live URL (HTTPS). Runtime still uses only bundled species data + Tesseract (no PokéAPI / CDN).
 
 | Control | Action |
 |---------|--------|
 | **Scan** | Camera / photo of the card name band |
 | **Identify** | Local Tesseract.js → fuzzy match → offline entry |
 | **Demo Pikachu** | Loads fixture → **forced Pikachu** (skips OCR) → entry |
-| **Search** | Type a Gen 1 name |
-| **Speak** | On-device `speechSynthesis` |
+| **Search** | Type a species name |
+| **Speak** | Bundled pre-rendered clip; `speechSynthesis` fallback |
 
 Low-confidence OCR opens search — never a silent wrong ID.
 
@@ -34,7 +34,8 @@ Low-confidence OCR opens search — never a silent wrong ID.
 
 | Asset | Path |
 |-------|------|
-| Gen 1 species DB (~151) | `web/data/offline/species_db.json` |
+| Species DB (all 1025) | `web/data/offline/species_db.json` |
+| Voice clips (one per species) | `web/data/audio/` |
 | Tesseract.js + WASM + eng data | `web/vendor/tesseract/` |
 | Fixture card | `web/fixtures/pikachu_card.png` |
 
@@ -51,7 +52,7 @@ Python is for matcher/OCR tests and headless demos — **not** the phone UI. Def
 python3 -m venv .venv && source .venv/bin/activate
 pip install -e ".[dev,ocr]"
 
-# Fixture → OCR → entry (stdout), offline Gen 1 DB
+# Fixture → OCR → entry (stdout), offline species DB
 python -m poke --demo --no-tts
 
 # Optional pygame bench UI (not used on the phone)

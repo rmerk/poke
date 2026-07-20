@@ -10,6 +10,10 @@
  * an older build can silently keep the old species list after an update.
  * `fetch(..., {cache:"reload"})` would also work but is not dependable on
  * iOS 12 Safari; a query string is.
+ *
+ * Exposed as `PokeApi.dataVersion` so every bundled-data fetch shares one
+ * value — tts.js tags manifest.json with it too, and the manifest tracks
+ * species_db.json, so a second hardcoded copy would silently drift on a bump.
  */
 var DATA_VERSION = "2";
 
@@ -98,4 +102,5 @@ window.PokeApi = {
   fetchPokemon: fetchPokemon,
   loadDb: loadDb,
   listSpeciesNames: listSpeciesNames,
+  dataVersion: DATA_VERSION,
 };

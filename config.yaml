@@ -27,7 +27,7 @@ api:
   timeout_seconds: 15
 
 offline:
-  # Default true — Gen 1 species_db; no live PokéAPI unless --online
+  # Default true — bundled species_db; no live PokéAPI unless --online
   enabled: true
   snapshot_dir: "data/offline"
   species_db: "data/offline/species_db.json"

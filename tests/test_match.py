@@ -149,3 +149,21 @@ def test_species_file_roundtrip(tmp_path: Path, config):
 
     names = load_species_names(config)
     assert names == ["Pikachu", "Eevee"]
+
+
+def test_both_name_writers_emit_the_same_bytes(tmp_path: Path) -> None:
+    """ensure_species_file and load_species_names must not drift again.
+
+    They each had their own json.dumps call; one escaped "Flabébé"/"Nidoran♀"
+    to \\uXXXX and one did not, so the file you got depended on which path
+    created it.
+    """
+    from poke.match import ensure_species_file, load_species_names
+
+    via_ensure = ensure_species_file(tmp_path / "a" / "names.json")
+    config = {"paths": {"species_names": str(tmp_path / "b" / "names.json")}}
+    load_species_names(config)
+    via_load = tmp_path / "b" / "names.json"
+
+    assert via_ensure.read_bytes() == via_load.read_bytes()
+    assert "\\u" not in via_ensure.read_text(encoding="utf-8")

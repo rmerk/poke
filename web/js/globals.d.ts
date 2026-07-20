@@ -71,6 +71,8 @@ interface PokeApiApi {
   fetchPokemon(name: string): Promise<PokemonRecord>;
   loadDb(): Promise<SpeciesDbPayload>;
   listSpeciesNames(payload: SpeciesDbPayload): string[];
+  /** Cache-busting tag shared by every bundled-data fetch. */
+  dataVersion: string;
 }
 
 interface PokeMatchApi {

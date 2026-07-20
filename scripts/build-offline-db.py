@@ -24,13 +24,17 @@ import argparse
 import hashlib
 import json
 import time
-import unicodedata
 import urllib.error
 import urllib.request
 from pathlib import Path
 from typing import Any
 
-from poke.offline_db import default_species_db_paths, write_species_db
+from poke.offline_db import (
+    build_aliases,
+    default_species_db_paths,
+    write_species_db,
+    write_species_names,
+)
 
 ROOT = Path(__file__).resolve().parent.parent
 NAMES_PATHS = [ROOT / "data" / "species_names.json", ROOT / "web" / "data" / "species_names.json"]
@@ -78,18 +82,6 @@ def english(entries: list[dict[str, Any]], field: str) -> str | None:
     return None
 
 
-def ascii_key(name: str) -> str:
-    """Accent- and punctuation-stripped alias so OCR can reach odd names.
-
-    "Flabébé" -> "flabebe", "Farfetch'd" -> "farfetchd", "Type: Null" ->
-    "type null", "Nidoran♀" -> "nidoran".
-    """
-    decomposed = unicodedata.normalize("NFKD", name)
-    stripped = "".join(c for c in decomposed if not unicodedata.combining(c))
-    kept = [c if (c.isalnum() or c.isspace()) else " " for c in stripped]
-    return " ".join("".join(kept).split()).casefold()
-
-
 def collect_evo_slugs(node: dict[str, Any], out: list[str]) -> None:
     if not node:
         return
@@ -109,7 +101,6 @@ def build(limit: int | None, refresh: bool, delay: float) -> dict[str, Any]:
     print(f"building {total} species")
 
     by_slug: dict[str, dict[str, Any]] = {}
-    aliases: dict[str, str] = {}
     evo_chains: dict[str, list[str]] = {}
     evo_for_slug: dict[str, str] = {}
 
@@ -176,10 +167,6 @@ def build(limit: int | None, refresh: bool, delay: float) -> dict[str, Any]:
             "evolutionNote": "",  # filled in once every display name is known
             "dexNumber": dex,
         }
-        for alias in (slug, display.casefold(), ascii_key(display)):
-            if alias:
-                aliases[alias] = slug
-
         if (i + 1) % 50 == 0 or i + 1 == total:
             print(f"[{i + 1}/{total}] {display}")
         time.sleep(delay)
@@ -201,7 +188,15 @@ def build(limit: int | None, refresh: bool, delay: float) -> dict[str, Any]:
         else:
             record["evolutionNote"] = "Evolution: " + " → ".join(shown) + "."
 
-    return {"version": 1, "count": len(by_slug), "bySlug": by_slug, "aliases": aliases}
+    # Built in one pass at the end, not per-record: an ASCII fold shared by two
+    # species (Nidoran♀/♂ -> "nidoran") must resolve to neither, and that is
+    # only knowable once every display name is in hand.
+    return {
+        "version": 1,
+        "count": len(by_slug),
+        "bySlug": by_slug,
+        "aliases": build_aliases(by_slug),
+    }
 
 
 def main() -> None:
@@ -221,10 +216,8 @@ def main() -> None:
         print(f"wrote {path} ({path.stat().st_size} bytes, {payload['count']} species)")
 
     names = [str(r["displayName"]) for r in payload["bySlug"].values()]
-    body = json.dumps(names, ensure_ascii=False, indent=2) + "\n"
+    write_species_names(NAMES_PATHS, names)
     for path in NAMES_PATHS:
-        path.parent.mkdir(parents=True, exist_ok=True)
-        path.write_text(body, encoding="utf-8")
         print(f"wrote {path} ({len(names)} names)")
 
 

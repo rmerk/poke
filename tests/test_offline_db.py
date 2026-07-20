@@ -16,7 +16,7 @@ def test_config_defaults_offline():
 def test_offline_species_db_charizard_no_network():
     config = load_config(project_root() / "config.yaml")
     config["offline"]["enabled"] = True
-    # Point at bundled Gen 1 DB; must not need per-species pokeapi JSON files
+    # Point at the bundled DB; must not need per-species pokeapi JSON files
     config["offline"]["species_db"] = "data/offline/species_db.json"
     client = PokeApiClient(config)
     data = client.fetch_pokemon("Charizard")

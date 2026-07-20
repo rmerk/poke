@@ -10,6 +10,7 @@ from typing import Any, Iterable
 from rapidfuzz import fuzz, process
 
 from poke.config import resolve_path
+from poke.offline_db import write_species_names
 
 
 @dataclass(frozen=True)
@@ -221,12 +222,7 @@ def load_species_names(config: dict[str, Any]) -> list[str]:
         if isinstance(data, list) and data:
             return [str(n) for n in data]
     names = default_species_names()
-    path.parent.mkdir(parents=True, exist_ok=True)
-    # ensure_ascii=False keeps "Flabébé"/"Nidoran♀" readable and byte-identical
-    # to what scripts/build-offline-db.py writes.
-    path.write_text(
-        json.dumps(names, ensure_ascii=False, indent=2) + "\n", encoding="utf-8"
-    )
+    write_species_names([path], names)
     return names
 
 
@@ -313,6 +309,5 @@ def match_from_config(query: str, config: dict[str, Any]) -> MatchResult:
 
 def ensure_species_file(path: Path) -> Path:
     if not path.exists():
-        path.parent.mkdir(parents=True, exist_ok=True)
-        path.write_text(json.dumps(default_species_names(), indent=2) + "\n", encoding="utf-8")
+        write_species_names([path], default_species_names())
     return path

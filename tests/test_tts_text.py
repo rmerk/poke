@@ -1,6 +1,6 @@
 """Narration must reach the synthesizer pronounceable.
 
-These cases are all drawn from the real Gen 1 narration corpus; the all-caps
+These cases are all drawn from the real narration corpus; the all-caps
 rule exists because PokeAPI flavor text still shouts, and espeak/piper spell
 fully-uppercase tokens letter by letter.
 """
