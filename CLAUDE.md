@@ -251,7 +251,10 @@ species list from the API — nothing to hand-edit) → confirm **both**
 
 **Changing the pipeline (match/OCR/entry logic):** the change likely needs to be
 made in **both** `web/js/` and `poke/` to keep parity. Update tests in `tests/`.
-Run the full check suite.
+Run the full check suite. Exception: `web/js/machine.js` (the UI state machine
+that orchestrates the pipeline) is a **web-only shell with no Python mirror** —
+the Python side is headless, so screen/intent/state changes there don't cross to
+`poke/`. Only the underlying match/OCR/entry *logic* needs parity.
 
 **Changing the stack / a locked decision** (device, offline requirement, data
 source, TTS engine, UI runtime): update `docs/build-tradeoffs.md` — it is the
@@ -260,7 +263,12 @@ diverge from it.
 
 **Touching `web/js/`:** stay ES2017, `var`, `window` globals, no modules/build.
 Update `web/js/globals.d.ts` if you add/change a public API shape, and keep
-`tsc --checkJs` green.
+`tsc --checkJs` green. `app.js` is a pure `render(state)` + `dispatch(intent)`
+shell over `PokeMachine` (`machine.js`); it reaches the five modules **only**
+through `machine.js`. `globals.d.ts` deliberately keeps `PokeApi`/`PokeMatch`/
+`PokeEntry`/`PokeOcr`/`PokeTts` off the global `declare var` list (they live on
+`interface Window` only), so any bare cross-module reference outside `machine.js`
+is a hard `tsc` error — that's the seam, don't re-add the `declare var`s.
 
 ## Git / contribution
 
