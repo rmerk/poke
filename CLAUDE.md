@@ -81,7 +81,8 @@ scripts/
   serve-web.sh               Serve web/ over LAN via python http.server (default :8080)
   build-offline-db.py        Rebuild species_db.json from PokéAPI (needs network ONCE)
   build-voice-clips.py       Re-render web/data/audio/ voice clips from the offline DB
-                             (build-time only; piper > mbrola us2 > festival kal > espeak-ng)
+                             (build-time only; piper > mbrola us2 > festival kal > espeak-ng.
+                             Shipped clips: piper en_US-ryan-medium, --pitch-cents -100)
 
 data/offline/species_db.json Bundled Gen 1 DB (Mac copy — mirror of web/ copy)
 data/species_names.json      Species name list (Mac copy)
@@ -142,7 +143,9 @@ edit `data/species_names.json` then rerun this script — do not edit the DB by 
   primary speech path; `speechSynthesis` (tuned robotic profile in `tts.js`) is
   the fallback only. If narration templates or `species_db.json` change, rerun
   the script — `tests/test_voice_clips.py` compares manifest narration hashes
-  and fails on stale clips.
+  and fails on stale clips. Rebuild with the same engine the clips were made
+  with; `manifest.json`'s `engine` field records it (currently
+  `piper:en_US-ryan-medium`), otherwise the voice silently changes mid-set.
 - **Attribution stays in the UI.** Every entry carries a PokéAPI + fan-demo
   attribution line. Don't remove it.
 - **Python types are strict.** mypy runs with `disallow_incomplete_defs`,
