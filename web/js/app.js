@@ -1,18 +1,8 @@
-/** Pocket Pokedex — offline-first UI for iPhone A1533 (Safari). */
+/** Pocket Pokedex — pure render + intent dispatch over PokeMachine.
+ * No pipeline knowledge: never sees MIN_CONF, never threads a slug, never
+ * branches on accept/ambiguous. It renders a state and forwards gestures. */
 
 (function () {
-  /** @type {string[]} */
-  var speciesNames = [];
-  /** @type {DexEntryView | null} */
-  var currentEntry = null;
-  /** @type {string | null} */
-  var currentSlug = null;
-  /** @type {HTMLImageElement | null} */
-  var previewImage = null;
-  /** @type {MatchCandidate[]} */
-  var lastCandidates = [];
-  var DEMO_FORCE_NAME = "Pikachu";
-
   /**
    * @param {string} id
    * @returns {HTMLElement}
@@ -49,41 +39,82 @@
     error: mustEl("screen-error"),
   };
 
+  // ------------------------------------------------------------- copy
+
   /**
-   * @param {string} name
+   * @param {BusyPhase} phase
+   * @returns {string}
    */
-  function showScreen(name) {
-    var key;
-    for (key in screens) {
-      if (Object.prototype.hasOwnProperty.call(screens, key)) {
-        screens[key].className = "screen" + (key === name ? " active" : "");
-      }
+  function busyTitle(phase) {
+    switch (phase.kind) {
+      case "demo":
+        return "Demo…";
+      case "ocr":
+        return "Reading card…";
+      case "lookup":
+        return "Looking up " + phase.name + "…";
+      default:
+        return assertNever(phase);
     }
   }
 
   /**
-   * @param {string} [title]
-   * @param {string} [status]
+   * @param {UnresolvedReason | null} reason
+   * @returns {string}
    */
-  function setBusy(title, status) {
-    mustEl("busy-title").textContent = title || "Working…";
-    mustEl("busy-status").textContent = status || "";
-    showScreen("busy");
+  function searchStatus(reason) {
+    if (!reason) return "Type a Pokémon name (offline list).";
+    switch (reason.kind) {
+      case "low-confidence":
+        return "Low confidence (" + Math.round(reason.score) + "). Confirm or type a name.";
+      case "ambiguous":
+        return "Too close to call between " + reason.count + " matches. Confirm or type a name.";
+      case "ocr-timeout":
+        return "OCR timed out. Search instead — still offline.";
+      case "ocr-failed":
+        return "OCR failed (" + reason.message + "). Search instead — still offline.";
+      case "empty-query":
+        return "Type a Pokémon name (offline list).";
+      default:
+        return assertNever(reason);
+    }
   }
 
   /**
-   * @param {string} msg
+   * @param {never} x
+   * @returns {never}
    */
-  function setError(msg) {
-    mustEl("error-message").textContent = msg;
-    showScreen("error");
+  function assertNever(x) {
+    throw new Error("Unhandled variant: " + JSON.stringify(x));
+  }
+
+  // ------------------------------------------------------------- render
+
+  /**
+   * @param {MatchCandidate[]} candidates
+   * @returns {void}
+   */
+  function renderCandidates(candidates) {
+    var box = mustEl("candidates");
+    box.innerHTML = "";
+    for (var i = 0; i < candidates.length; i++) {
+      (function (c, idx) {
+        var btn = document.createElement("button");
+        btn.type = "button";
+        btn.textContent = idx + 1 + ". " + c.name + " (" + Math.round(c.score) + ")";
+        btn.onclick = function () {
+          PokeMachine.dispatch({ type: "CANDIDATE_PICKED", index: idx });
+        };
+        box.appendChild(btn);
+      })(candidates[i], i);
+    }
   }
 
   /**
    * @param {DexEntryView} entry
+   * @returns {void}
    */
   function renderEntry(entry) {
-    currentEntry = entry;
     mustEl("entry-title").textContent = entry.title;
     mustEl("entry-meta").textContent =
       entry.typesLine + " · " + entry.category + " · " + entry.heightWeight;
@@ -96,174 +127,100 @@
       ul.appendChild(li);
     }
     mustEl("entry-attr").textContent = entry.attribution;
-    showScreen("entry");
   }
 
   /**
-   * @param {Partial<MatchResult> & { score: number, candidates?: MatchCandidate[] }} match
-   * @param {string} [statusMsg]
+   * Pure function of state → DOM. Never dispatches, never reads the DOM back.
+   * @param {PokeState} state
+   * @param {PokeState | null} prev
+   * @returns {void}
    */
-  function renderCandidates(match, statusMsg) {
-    lastCandidates = match.candidates || [];
-    // An ambiguous match can score high — saying "low confidence (93)" there
-    // would read as a bug. The reason it went to search is the tie, not the score.
-    var reason = match.ambiguous
-      ? "Too close to call between " + lastCandidates.length + " matches"
-      : "Low confidence (" + Math.round(match.score) + ")";
-    mustEl("search-status").textContent =
-      statusMsg || reason + ". Confirm or type a name.";
-    var box = mustEl("candidates");
-    box.innerHTML = "";
-    for (var i = 0; i < lastCandidates.length; i++) {
-      (function (c, idx) {
-        var btn = document.createElement("button");
-        btn.type = "button";
-        btn.textContent = idx + 1 + ". " + c.name + " (" + Math.round(c.score) + ")";
-        btn.onclick = function () {
-          lookupName(c.name);
-        };
-        box.appendChild(btn);
-      })(lastCandidates[i], i);
+  function render(state, prev) {
+    var key;
+    for (key in screens) {
+      if (Object.prototype.hasOwnProperty.call(screens, key)) {
+        screens[key].className = "screen" + (key === state.screen ? " active" : "");
+      }
     }
-    showScreen("search");
-  }
 
-  /**
-   * @param {string} name
-   * @returns {Promise<void>}
-   */
-  function lookupName(name) {
-    setBusy("Looking up " + name + "…", "Offline Pokédex");
-    return PokeApi.fetchPokemon(name)
-      .then(function (data) {
-        currentSlug = data.name;
-        renderEntry(PokeEntry.buildEntry(data));
-      })
-      .catch(function (/** @type {any} */ err) {
-        setError(String(err.message || err));
-      });
-  }
-
-  /**
-   * @param {HTMLImageElement} img
-   * @returns {Promise<void>}
-   */
-  function identifyImage(img) {
-    setBusy("Reading card…", "On-device OCR (offline)");
-    return PokeOcr.extractNameFromImage(img, function (s) {
-      mustEl("busy-status").textContent = s;
-    })
-      .then(function (ocr) {
-        var match = PokeMatch.matchName(ocr.text, speciesNames, PokeOcr.MIN_CONF);
-        mustEl("busy-status").textContent =
-          "OCR: " + (ocr.text || "(empty)") + " → " + match.name + " (" + Math.round(match.score) + ")";
-        if (match.accepted) {
-          return lookupName(match.name);
+    switch (state.screen) {
+      case "idle":
+        return;
+      case "busy":
+        mustEl("busy-title").textContent = busyTitle(state.phase);
+        mustEl("busy-status").textContent = state.detail;
+        return;
+      case "preview":
+        if (!prev || prev.screen !== "preview" || prev.image !== state.image) {
+          mustImg("preview-img").src = state.image.src;
         }
-        renderCandidates(match);
-      })
-      .catch(function (/** @type {any} */ err) {
-        renderCandidates(
-          { score: 0, candidates: [] },
-          "OCR failed (" + (err.message || err) + "). Search instead — still offline."
-        );
-      });
+        mustEl("preview-status").textContent = "Align the name inside the red box, then Identify.";
+        return;
+      case "search":
+        mustEl("search-status").textContent = searchStatus(state.reason);
+        // Rebuilding buttons is the one costly op here — skip it unless the
+        // candidate array actually changed identity.
+        if (!prev || prev.screen !== "search" || prev.candidates !== state.candidates) {
+          renderCandidates(state.candidates);
+        }
+        return;
+      case "entry":
+        if (!prev || prev.screen !== "entry" || prev.entry !== state.entry) {
+          renderEntry(state.entry);
+        }
+        return;
+      case "error":
+        mustEl("error-message").textContent = state.message;
+        return;
+      default:
+        return assertNever(state);
+    }
   }
 
-  /**
-   * @returns {Promise<void>}
-   */
-  function boot() {
-    return PokeApi.loadDb().then(function (payload) {
-      speciesNames = PokeApi.listSpeciesNames(payload);
-    });
-  }
-
-  /**
-   * @param {File | undefined} file
-   */
-  function onFile(file) {
-    if (!file) return;
-    var url = URL.createObjectURL(file);
-    var img = mustImg("preview-img");
-    img.onload = function () {
-      previewImage = img;
-      showScreen("preview");
-      URL.revokeObjectURL(url);
-    };
-    img.src = url;
-  }
-
-  function runDemo() {
-    // Risk mitigation: demo fixture skips OCR when forced name.
-    setBusy("Demo…", "Fixture + forced " + DEMO_FORCE_NAME + " (OCR skipped)");
-    var img = new Image();
-    img.onload = function () {
-      mustImg("preview-img").src = img.src;
-      previewImage = mustImg("preview-img");
-      mustEl("preview-status").textContent =
-        "Fixture loaded. Skipping OCR — forced name " + DEMO_FORCE_NAME + ".";
-      lookupName(DEMO_FORCE_NAME);
-    };
-    img.onerror = function () {
-      setError("Could not load fixtures/pikachu_card.png");
-    };
-    img.src = "fixtures/pikachu_card.png";
-  }
-
-  function goBack() {
-    PokeTts.stop();
-    currentEntry = null;
-    currentSlug = null;
-    showScreen("idle");
-  }
+  // ------------------------------------------------------------- intents
 
   mustEl("btn-scan").onclick = function () {
     mustInput("file-input").click();
   };
-  mustEl("btn-back").onclick = goBack;
-  mustEl("btn-speak").onclick = function () {
-    if (!currentEntry) return;
-    PokeTts.speak(currentEntry.narration, currentSlug || undefined).catch(function (/** @type {any} */ e) {
-      setError(String(e.message || e));
-    });
+  mustEl("btn-reshoot").onclick = function () {
+    mustInput("file-input").click();
   };
+  mustEl("btn-back").onclick = function () {
+    PokeMachine.dispatch({ type: "BACK_PRESSED" });
+  };
+  mustEl("btn-speak").onclick = function () {
+    PokeMachine.dispatch({ type: "SPEAK_REQUESTED" });
+  };
+  mustEl("btn-demo").onclick = function () {
+    PokeMachine.dispatch({ type: "DEMO_REQUESTED" });
+  };
+  mustEl("btn-identify").onclick = function () {
+    PokeMachine.dispatch({ type: "IDENTIFY_REQUESTED" });
+  };
+  mustEl("btn-search-idle").onclick = function () {
+    PokeMachine.dispatch({ type: "SEARCH_OPENED" });
+    mustInput("search-input").focus();
+  };
+  mustEl("btn-search-go").onclick = function () {
+    PokeMachine.dispatch({ type: "SEARCH_SUBMITTED", query: mustInput("search-input").value });
+  };
+  // "Next": accept the top candidate on the search screen, otherwise scan
+  // another card. Routes on machine state, not on a DOM class read.
   mustEl("btn-next").onclick = function () {
-    if (screens.search.className.indexOf("active") !== -1 && lastCandidates.length) {
-      lookupName(lastCandidates[0].name);
+    var s = PokeMachine.getState();
+    if (s.screen === "search" && s.candidates.length) {
+      PokeMachine.dispatch({ type: "CANDIDATE_PICKED", index: 0 });
       return;
     }
     mustInput("file-input").click();
   };
-  mustEl("btn-demo").onclick = runDemo;
-  mustEl("btn-search-idle").onclick = function () {
-    renderCandidates({ score: 0, candidates: [] }, "Type a Pokémon name (offline list).");
-    mustInput("search-input").focus();
-  };
-  mustEl("btn-identify").onclick = function () {
-    if (!previewImage) return;
-    identifyImage(previewImage);
-  };
-  mustEl("btn-reshoot").onclick = function () {
-    mustInput("file-input").click();
-  };
-  mustEl("btn-search-go").onclick = function () {
-    var q = mustInput("search-input").value;
-    var match = PokeMatch.matchName(q, speciesNames, PokeOcr.MIN_CONF);
-    if (match.accepted) {
-      lookupName(match.name);
-    } else {
-      renderCandidates(match, "Confirm a candidate or refine the spelling.");
-    }
-  };
   mustInput("file-input").onchange = function (e) {
     var target = /** @type {HTMLInputElement} */ (e.target);
     var f = target.files && target.files[0];
-    onFile(f || undefined);
+    if (f) PokeMachine.dispatch({ type: "PHOTO_SELECTED", file: f });
     target.value = "";
   };
 
-  boot().catch(function (/** @type {any} */ e) {
-    setError("Failed to load offline Pokédex: " + e);
-  });
+  PokeMachine.subscribe(render);
+  PokeMachine.start();
 })();

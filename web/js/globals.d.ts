@@ -97,17 +97,72 @@ interface PokeTtsApi {
   stop(): void;
 }
 
+/* ---------- State machine (web/js/machine.js) ---------- */
+
+/** Why a match didn't resolve to an entry. Data, never display copy. */
+type UnresolvedReason =
+  | { kind: "low-confidence"; score: number }
+  | { kind: "ambiguous"; count: number }
+  | { kind: "ocr-timeout" }
+  | { kind: "ocr-failed"; message: string }
+  | { kind: "empty-query" };
+
+/** What the busy screen is waiting on. */
+type BusyPhase =
+  | { kind: "demo"; forcedName: string }
+  | { kind: "ocr" }
+  | { kind: "lookup"; name: string };
+
+/** Exactly one variant per screen in index.html. */
+type PokeState =
+  | { screen: "idle" }
+  | { screen: "busy"; phase: BusyPhase; detail: string }
+  | { screen: "preview"; image: HTMLImageElement }
+  | { screen: "search"; candidates: MatchCandidate[]; reason: UnresolvedReason | null }
+  | { screen: "entry"; entry: DexEntryView; slug: string }
+  | { screen: "error"; message: string };
+
+/** Everything a user gesture can express. */
+type PokeIntent =
+  | { type: "PHOTO_SELECTED"; file: File }
+  | { type: "IDENTIFY_REQUESTED" }
+  | { type: "DEMO_REQUESTED" }
+  | { type: "SEARCH_OPENED" }
+  | { type: "SEARCH_SUBMITTED"; query: string }
+  | { type: "CANDIDATE_PICKED"; index: number }
+  | { type: "SPEAK_REQUESTED" }
+  | { type: "BACK_PRESSED" };
+
+/** The five collaborators. Injectable so a headless test can stub them. */
+interface PokeMachineDeps {
+  api: PokeApiApi;
+  match: PokeMatchApi;
+  entry: PokeEntryApi;
+  ocr: PokeOcrApi;
+  tts: PokeTtsApi;
+}
+
+interface PokeMachineApi {
+  /** Loads the offline DB, then settles on idle (or error). Defaults deps to the window globals. */
+  start(deps?: Partial<PokeMachineDeps>): void;
+  /** Fire a user intent. Never throws; an intent that makes no sense in the current state is ignored. */
+  dispatch(intent: PokeIntent): void;
+  /** Called immediately with the current state, then on every change. Returns an unsubscribe fn. */
+  subscribe(listener: (state: PokeState, prev: PokeState | null) => void): () => void;
+  /** Frozen current state, for debugging and button routing. */
+  getState(): PokeState;
+  /** Ring buffer of the last ~20 {intent, screen} pairs — an on-device debugging aid. */
+  history(): ReadonlyArray<{ intent: string; screen: string }>;
+}
+
 interface Window {
   PokeApi: PokeApiApi;
   PokeMatch: PokeMatchApi;
   PokeEntry: PokeEntryApi;
   PokeOcr: PokeOcrApi;
   PokeTts: PokeTtsApi;
+  PokeMachine: PokeMachineApi;
   Tesseract?: any;
 }
 
-declare var PokeApi: PokeApiApi;
-declare var PokeMatch: PokeMatchApi;
-declare var PokeEntry: PokeEntryApi;
-declare var PokeOcr: PokeOcrApi;
-declare var PokeTts: PokeTtsApi;
+declare var PokeMachine: PokeMachineApi;
