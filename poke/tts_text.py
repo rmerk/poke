@@ -10,6 +10,19 @@ from __future__ import annotations
 
 import re
 
+from poke.pronunciations import PRONUNCIATIONS
+
+# Pokemon names the synthesizer would otherwise guess at ("Arceus" -> "AR-see-us")
+# get an espeak-friendly respelling. Longer keys first so a multi-word name
+# ("Iron Hands") wins over any shorter overlap; the letter guards keep a name
+# from matching inside a longer word ("Mew" inside "Mewtwo"). Built at import
+# from the generated map — see scripts/build-pronunciations.py.
+_PRONOUNCE_RE = re.compile(
+    r"(?<![A-Za-z])(?:"
+    + "|".join(re.escape(k) for k in sorted(PRONUNCIATIONS, key=len, reverse=True))
+    + r")(?![A-Za-z])"
+)
+
 # PokeAPI flavor text keeps the old all-caps convention ("POKéMON", "MAGIKARP",
 # "THUNDER WAVE"), and espeak/mbrola/festival spell all-caps tokens letter by
 # letter. Measured against piper en_US-ryan-medium this rule is inert —
@@ -40,7 +53,14 @@ def _soften_caps(match: re.Match[str]) -> str:
 
 def tts_text(narration: str) -> str:
     """Normalize narration for the synthesizers (they read ASCII best)."""
-    s = narration.replace("→", " to ").replace("…", ".")
+    # Respell names first, while they still carry their display spelling (the
+    # keys include the accents and apostrophes that later lines fold away).
+    s = _PRONOUNCE_RE.sub(lambda m: PRONUNCIATIONS[m.group(0)], narration)
+    # The evolution chain arrives as "A → B → C"; a bare " to " runs the stages
+    # together in one breath. The comma gives the synthesizer a beat between
+    # each stage so the sequence is legible aloud. Eat the arrow's flanking
+    # spaces so the beat reads as "A, to B" rather than "A , to B".
+    s = re.sub(r"\s*→\s*", ", to ", s).replace("…", ".")
     s = s.replace("♀", " female").replace("♂", " male")
     # Before the accent is folded away, so "POKéMON" is caught as one token.
     s = _POKEMON_RE.sub("Pokemon", s)
