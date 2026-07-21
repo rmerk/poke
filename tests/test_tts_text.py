@@ -22,13 +22,30 @@ from poke.tts_text import tts_text
         ("SLOWPOKE's", "Slowpoke's"),  # possessive survives
         ("POKéMON", "Pokemon"),
         ("POKé BALL", "Poke Ball"),
-        # Not all-caps runs — must be left alone.
+        # Not all-caps runs — must be left alone. (Ordinary text, not a
+        # species name; Pokemon names get respelled by a separate rule below.)
         ("It fled", "It fled"),
-        ("Mr. Mime", "Mr. Mime"),
+        ("Mr. Fuji", "Mr. Fuji"),
         ("I", "I"),
     ],
 )
 def test_shouted_flavor_text_reads_as_words(raw: str, expected: str) -> None:
+    assert tts_text(raw) == expected
+
+
+def test_evolution_arrow_becomes_a_spoken_pause() -> None:
+    """The chain arrow must read as a beat between stages, not a run-on."""
+    assert tts_text("A → B → C") == "A, to B, to C"
+
+
+@pytest.mark.parametrize(
+    "raw, expected",
+    [
+        ("Arceus", "arkeeus"),  # espeak would otherwise say "AR-see-us"
+        ("Nidoran♀", "needoran female"),  # respell survives the ♀ expansion
+    ],
+)
+def test_mispronounced_names_are_respelled(raw: str, expected: str) -> None:
     assert tts_text(raw) == expected
 
 
