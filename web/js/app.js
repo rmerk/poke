@@ -261,7 +261,9 @@
     stats.appendChild(statChip("Height", hw[0] || "—"));
     stats.appendChild(statChip("Weight", hw[1] || "—"));
 
-    mustEl("entry-narration").textContent = entry.narration;
+    // The readout shows the flavor lore alone; the header/vitals/DATA already
+    // carry name, dex, type, size and evolution — no need to restate them here.
+    mustEl("entry-narration").textContent = entry.description;
 
     // Facts already surfaced above (type/category/height) are dropped so the
     // list reads as extra data, not a repeat of the header.
@@ -274,6 +276,10 @@
       li.textContent = f;
       ul.appendChild(li);
     }
+    // Hide the whole DATA section (label + list) when nothing survived the
+    // filter, so the label never sits over an empty list.
+    mustEl("entry-data").style.display = ul.children.length ? "block" : "none";
+
     mustEl("entry-attr").textContent = entry.attribution;
   }
 

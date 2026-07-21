@@ -40,7 +40,10 @@ interface DexEntryView {
   typesLine: string;
   category: string;
   heightWeight: string;
+  /** Full show-host paragraph — spoken (TTS fallback), no longer shown on screen. */
   narration: string;
+  /** The flavor lore alone, cleaned for display — what the readout renders. */
+  description: string;
   facts: string[];
   attribution: string;
 }
