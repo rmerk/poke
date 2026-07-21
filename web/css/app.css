@@ -42,6 +42,11 @@
   --r-chip: 4px;
   --r-btn: 6px;
 
+  /* Spacing scale — systematic rhythm, not ad-hoc margins. */
+  --gap-1: 6px;    /* within a tight group */
+  --gap-2: 12px;   /* between grouped rows */
+  --gap-3: 18px;   /* between zones */
+
   --safe-bottom: env(safe-area-inset-bottom, 0px);
   --safe-top: env(safe-area-inset-top, 0px);
 }
@@ -458,7 +463,7 @@ input[type="search"]:focus {
   position: relative;
   height: 156px;
   border-radius: var(--r-card);
-  margin-bottom: 15px;
+  margin-bottom: var(--gap-3);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -520,31 +525,41 @@ input[type="search"]:focus {
   50% { transform: translateY(4px); }
 }
 
-.dexno {
-  position: absolute;
-  top: 11px;
-  right: 12px;
-  font-family: var(--font-mono);
-  font-size: 12px;
-  font-weight: 700;
-  letter-spacing: 0.04em;
-  color: #fff;
-  padding: 3px 9px;
-  border-radius: var(--r-chip);
-  background: rgba(0, 0, 0, 0.45);
-  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.16);
+/* Entry identity cluster: name + dex + category + types read as one group,
+ * then a hairline divider before the vitals. */
+.entry-head {
+  margin-bottom: var(--gap-3);
+  padding-bottom: var(--gap-3);
+  border-bottom: 1px solid var(--hair);
+}
+.headline {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 10px;
 }
 
 #entry-title {
   font-size: 28px;
   letter-spacing: 0.01em;
-  margin-bottom: 10px;
+  margin: 0;
+}
+
+/* Dex number sits with the name now (canonical "No. 025"), not floating on
+ * the portrait — an inline mono data tag. */
+.dexno {
+  flex-shrink: 0;
+  font-family: var(--font-mono);
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  color: var(--muted);
 }
 
 .badges {
   display: flex;
   flex-wrap: wrap;
-  margin-bottom: 11px;
+  margin: var(--gap-2) 0 0;
 }
 /* Type tags read as data labels, not soft pills. */
 .badge {
@@ -564,7 +579,7 @@ input[type="search"]:focus {
   color: var(--muted);
   font-size: 13px;
   font-style: italic;
-  margin: 0 0 13px;
+  margin: var(--gap-1) 0 0;
 }
 
 .stats {
@@ -572,7 +587,7 @@ input[type="search"]:focus {
   grid-template-columns: 1fr 1fr;
   grid-gap: 10px;
   gap: 10px;
-  margin-bottom: 15px;
+  margin-bottom: var(--gap-3);
 }
 .stat {
   background: var(--screen-2);
@@ -602,7 +617,7 @@ input[type="search"]:focus {
   border-left: 3px solid var(--accent);
   border-radius: 0 var(--r-card) var(--r-card) 0;
   padding: 12px 15px 14px;
-  margin-bottom: 15px;
+  margin-bottom: var(--gap-3);
 }
 .readout-label {
   font-family: var(--font-mono);
@@ -633,6 +648,17 @@ input[type="search"]:focus {
 @keyframes caret {
   0%, 50% { opacity: 1; }
   50.01%, 100% { opacity: 0; }
+}
+
+/* Extra data reads as a titled section — a muted twin of the readout label so
+ * it sits below the accent-colored readout without competing with it. */
+.data-label {
+  font-family: var(--font-mono);
+  font-size: 9.5px;
+  font-weight: 700;
+  letter-spacing: 0.24em;
+  color: var(--faint);
+  margin-bottom: 8px;
 }
 
 .facts {

@@ -1,6 +1,21 @@
 /** Show-host entry builder. */
 
 /**
+ * Tidy raw PokéAPI flavor text for on-screen display: old-game copy SHOUTS
+ * "POKéMON", and the source often carries stray line breaks. Kept in step with
+ * poke/entry.py:_clean_flavor. (Speech normalization is separate — tts_text.py.)
+ * @param {string} text
+ * @returns {string}
+ */
+function cleanFlavor(text) {
+  return (text || "")
+    .replace(/POKéMON/g, "Pokémon")
+    .replace(/POKÉMON/g, "Pokémon")
+    .replace(/\s+/g, " ")
+    .trim();
+}
+
+/**
  * @param {PokemonRecord} data
  * @returns {DexEntryView}
  */
@@ -40,6 +55,7 @@ function buildEntry(data) {
     category: data.category,
     heightWeight: hw,
     narration: narration.trim(),
+    description: cleanFlavor(data.flavorText) || data.evolutionNote,
     facts: [
       "Type: " + typesLine,
       "Category: " + data.category,

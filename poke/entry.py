@@ -2,9 +2,21 @@
 
 from __future__ import annotations
 
+import re
 from dataclasses import dataclass
 
 from poke.api_client import PokemonData
+
+# Old-game flavor text SHOUTS the species noun; render it as the proper word.
+_SHOUT_POKEMON = re.compile(r"POK[éÉ]MON")
+
+
+def _clean_flavor(text: str) -> str:
+    """Tidy raw flavor text for on-screen display. Mirrors web/js/entry.js:cleanFlavor.
+
+    Speech normalization is a separate, richer pass — see poke/tts_text.py.
+    """
+    return re.sub(r"\s+", " ", _SHOUT_POKEMON.sub("Pokémon", text or "")).strip()
 
 
 @dataclass(frozen=True)
@@ -15,6 +27,7 @@ class DexEntry:
     category: str
     height_weight: str
     narration: str
+    description: str
     facts: tuple[str, ...]
     attribution: str = "Data: PokéAPI snapshot (offline). Fan demo only."
 
@@ -52,5 +65,6 @@ def build_entry(data: PokemonData) -> DexEntry:
         category=data.category,
         height_weight=hw,
         narration=narration.strip(),
+        description=_clean_flavor(data.flavor_text) or data.evolution_note,
         facts=facts,
     )
