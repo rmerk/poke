@@ -63,18 +63,18 @@
    * @returns {string}
    */
   function searchStatus(reason) {
-    if (!reason) return "Type a Pokémon name (offline list).";
+    if (!reason) return "Type a Pokémon name to search the offline list.";
     switch (reason.kind) {
       case "low-confidence":
-        return "Low confidence (" + Math.round(reason.score) + "). Confirm or type a name.";
+        return "Low confidence (" + Math.round(reason.score) + "). Pick a match or type the name.";
       case "ambiguous":
-        return "Too close to call between " + reason.count + " matches. Confirm or type a name.";
+        return "Too close to call between " + reason.count + " matches. Pick one or type the name.";
       case "ocr-timeout":
-        return "OCR timed out. Search instead — still offline.";
+        return "The read timed out. Pick a match or type the name.";
       case "ocr-failed":
-        return "OCR failed (" + reason.message + "). Search instead — still offline.";
+        return "Couldn't read the card (" + reason.message + "). Pick a match or type the name.";
       case "empty-query":
-        return "Type a Pokémon name (offline list).";
+        return "Type a Pokémon name to search the offline list.";
       default:
         return assertNever(reason);
     }
@@ -303,7 +303,7 @@
           mustImg("preview-img").src = state.image.src;
         }
         mustEl("preview-status").textContent =
-          "Fill the red box with the card's name — move closer if it looks small, then Identify.";
+          "Frame the name in the red box — move closer if it looks small — then Identify.";
         return;
       case "search":
         mustEl("search-status").textContent = searchStatus(state.reason);
