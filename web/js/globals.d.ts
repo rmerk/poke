@@ -88,9 +88,12 @@ interface PokeEntryApi {
 interface PokeOcrApi {
   extractNameFromImage(
     img: HTMLImageElement | HTMLCanvasElement,
+    opts?: { profile?: "tight" | "wide"; timeoutMs?: number },
     onProgress?: (status: string) => void
   ): Promise<OcrExtractResult>;
   MIN_CONF: number;
+  /** Soft ceiling for a single identify (all passes share this budget). */
+  OCR_TIMEOUT_MS: number;
 }
 
 interface PokeTtsApi {

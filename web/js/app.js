@@ -302,7 +302,8 @@
         if (!prev || prev.screen !== "preview" || prev.image !== state.image) {
           mustImg("preview-img").src = state.image.src;
         }
-        mustEl("preview-status").textContent = "Align the name inside the red box, then Identify.";
+        mustEl("preview-status").textContent =
+          "Fill the red box with the card's name — move closer if it looks small, then Identify.";
         return;
       case "search":
         mustEl("search-status").textContent = searchStatus(state.reason);
