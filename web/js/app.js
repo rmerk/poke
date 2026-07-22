@@ -254,33 +254,147 @@
 
     mustEl("entry-meta").textContent = "The " + entry.category;
 
-    // Height · Weight → two stat chips.
+    // Height · Weight · Gender vitals.
     var stats = mustEl("entry-stats");
     stats.innerHTML = "";
     var hw = entry.heightWeight.split(" · ");
     stats.appendChild(statChip("Height", hw[0] || "—"));
     stats.appendChild(statChip("Weight", hw[1] || "—"));
+    stats.appendChild(statChip("Gender", entry.genderLabel || "—"));
 
-    // The readout shows the flavor lore alone; the header/vitals/DATA already
-    // carry name, dex, type, size and evolution — no need to restate them here.
+    // Flavor lore alone — Speak still uses the full show-host narration.
     mustEl("entry-narration").textContent = entry.description;
 
-    // Facts already surfaced above (type/category/height) are dropped so the
-    // list reads as extra data, not a repeat of the header.
-    var ul = mustEl("entry-facts");
-    ul.innerHTML = "";
-    for (var i = 0; i < entry.facts.length; i++) {
-      var f = entry.facts[i];
-      if (/^(Type|Category|Height)\b/.test(f)) continue;
-      var li = document.createElement("li");
-      li.textContent = f;
-      ul.appendChild(li);
-    }
-    // Hide the whole DATA section (label + list) when nothing survived the
-    // filter, so the label never sits over an empty list.
-    mustEl("entry-data").style.display = ul.children.length ? "block" : "none";
+    renderAbilityChips(entry.abilities);
+    renderWeaknessBadges(entry.weaknesses);
+    renderBaseStats(entry.baseStats);
+    renderEvolutionStrip(entry.evolutionChain, slug);
 
     mustEl("entry-attr").textContent = entry.attribution;
+  }
+
+  /**
+   * @param {string[]} abilities
+   * @returns {void}
+   */
+  function renderAbilityChips(abilities) {
+    var row = mustEl("entry-abilities");
+    row.innerHTML = "";
+    var list = abilities && abilities.length ? abilities : ["Unknown"];
+    for (var i = 0; i < list.length; i++) {
+      var chip = document.createElement("span");
+      chip.className = "ability-chip";
+      chip.textContent = list[i];
+      row.appendChild(chip);
+    }
+  }
+
+  /**
+   * @param {string[]} weaknesses
+   * @returns {void}
+   */
+  function renderWeaknessBadges(weaknesses) {
+    var box = mustEl("entry-weaknesses");
+    var block = mustEl("entry-weak-block");
+    box.innerHTML = "";
+    if (!weaknesses || !weaknesses.length) {
+      block.style.display = "none";
+      return;
+    }
+    block.style.display = "block";
+    for (var i = 0; i < weaknesses.length; i++) {
+      var color = typeColor(weaknesses[i]);
+      var b = document.createElement("span");
+      b.className = "badge";
+      b.style.background = color;
+      b.style.color = inkOn(color);
+      b.textContent = weaknesses[i];
+      box.appendChild(b);
+    }
+  }
+
+  /**
+   * @param {BaseStats} base
+   * @returns {void}
+   */
+  function renderBaseStats(base) {
+    var box = mustEl("entry-base-stats");
+    box.innerHTML = "";
+    /** @type {Array<{ key: keyof BaseStats, label: string }>} */
+    var rows = [
+      { key: "hp", label: "HP" },
+      { key: "attack", label: "Attack" },
+      { key: "defense", label: "Defense" },
+      { key: "specialAttack", label: "Sp. Atk" },
+      { key: "specialDefense", label: "Sp. Def" },
+      { key: "speed", label: "Speed" },
+    ];
+    var i;
+    for (i = 0; i < rows.length; i++) {
+      var val = (base && base[rows[i].key]) || 0;
+      var pct = Math.max(0, Math.min(100, Math.round((val / 255) * 100)));
+      var row = document.createElement("div");
+      row.className = "base-row";
+      var lab = document.createElement("span");
+      lab.className = "base-lab";
+      lab.textContent = rows[i].label;
+      var num = document.createElement("span");
+      num.className = "base-num";
+      num.textContent = String(val);
+      var track = document.createElement("div");
+      track.className = "base-track";
+      var fill = document.createElement("div");
+      fill.className = "base-fill";
+      fill.style.width = pct + "%";
+      track.appendChild(fill);
+      row.appendChild(lab);
+      row.appendChild(num);
+      row.appendChild(track);
+      box.appendChild(row);
+    }
+  }
+
+  /**
+   * @param {EvolutionStage[]} chain
+   * @param {string} currentSlug
+   * @returns {void}
+   */
+  function renderEvolutionStrip(chain, currentSlug) {
+    var strip = mustEl("entry-evo");
+    strip.innerHTML = "";
+    var stages = chain && chain.length ? chain : [];
+    var i;
+    for (i = 0; i < stages.length; i++) {
+      if (i > 0) {
+        var arrow = document.createElement("span");
+        arrow.className = "evo-arrow";
+        arrow.setAttribute("aria-hidden", "true");
+        arrow.textContent = "→";
+        strip.appendChild(arrow);
+      }
+      (function (stage) {
+        var btn = document.createElement("button");
+        btn.type = "button";
+        btn.className = "evo-stage" + (stage.slug === currentSlug ? " is-current" : "");
+        btn.setAttribute("aria-label", stage.displayName);
+        var img = document.createElement("img");
+        img.className = "evo-sprite";
+        img.alt = "";
+        img.src = "data/sprites/" + stage.slug + ".png";
+        img.onerror = function () {
+          img.style.visibility = "hidden";
+        };
+        var name = document.createElement("span");
+        name.className = "evo-name";
+        name.textContent = stage.displayName;
+        btn.appendChild(img);
+        btn.appendChild(name);
+        btn.onclick = function () {
+          PokeMachine.dispatch({ type: "SPECIES_REQUESTED", name: stage.displayName });
+        };
+        strip.appendChild(btn);
+      })(stages[i]);
+    }
   }
 
   /**
@@ -346,6 +460,24 @@
   mustEl("btn-speak").onclick = function () {
     PokeMachine.dispatch({ type: "SPEAK_REQUESTED" });
   };
+
+  // Speak ↔ Stop while a clip or speechSynthesis utterance is active.
+  window.PokeTts.subscribe(function (active) {
+    var btn = mustEl("btn-speak");
+    var ico = btn.querySelector(".ico");
+    var lbl = btn.querySelector(".lbl");
+    if (active) {
+      btn.classList.add("is-speaking");
+      btn.setAttribute("aria-label", "Stop speaking");
+      if (ico) ico.textContent = "■";
+      if (lbl) lbl.textContent = "Stop";
+    } else {
+      btn.classList.remove("is-speaking");
+      btn.setAttribute("aria-label", "Speak entry");
+      if (ico) ico.textContent = "►";
+      if (lbl) lbl.textContent = "Speak";
+    }
+  });
   mustEl("btn-demo").onclick = function () {
     PokeMachine.dispatch({ type: "DEMO_REQUESTED" });
   };

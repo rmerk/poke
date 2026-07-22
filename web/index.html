@@ -105,9 +105,21 @@
             <div class="readout-label">POKÉDEX ENTRY</div>
             <p class="narration" id="entry-narration"></p>
           </div>
-          <section class="data-block" id="entry-data">
-            <div class="data-label">DATA</div>
-            <ul class="facts" id="entry-facts"></ul>
+          <section class="detail-block" id="entry-abilities-block">
+            <div class="data-label">Abilities</div>
+            <div class="chip-row" id="entry-abilities"></div>
+          </section>
+          <section class="detail-block" id="entry-weak-block">
+            <div class="data-label">Weaknesses</div>
+            <div class="badges" id="entry-weaknesses"></div>
+          </section>
+          <section class="detail-block" id="entry-base-block">
+            <div class="data-label">Base Stats</div>
+            <div class="base-stats" id="entry-base-stats"></div>
+          </section>
+          <section class="detail-block" id="entry-evo-block">
+            <div class="data-label">Evolutions</div>
+            <div class="evo-strip" id="entry-evo"></div>
           </section>
           <p class="attr" id="entry-attr"></p>
         </section>
@@ -137,12 +149,12 @@
       capture="environment"
     />
 
-    <script src="js/match.js"></script>
-    <script src="js/api.js"></script>
-    <script src="js/entry.js"></script>
-    <script src="js/tts.js"></script>
-    <script src="js/ocr.js"></script>
-    <script src="js/machine.js"></script>
-    <script src="js/app.js"></script>
+    <script src="js/match.js?v=3"></script>
+    <script src="js/api.js?v=3"></script>
+    <script src="js/entry.js?v=3"></script>
+    <script src="js/tts.js?v=3"></script>
+    <script src="js/ocr.js?v=3"></script>
+    <script src="js/machine.js?v=3"></script>
+    <script src="js/app.js?v=3"></script>
   </body>
 </html>

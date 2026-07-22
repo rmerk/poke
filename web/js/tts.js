@@ -14,6 +14,19 @@ var DEX_PITCH = 0.5;
 /** @type {HTMLAudioElement | null} */
 var currentAudio = null;
 
+/** True while a clip or speechSynthesis utterance is active. */
+var speaking = false;
+
+/**
+ * Bumped on every stop (and at the start of each speak) so in-flight
+ * onend/onerror handlers from a cancelled utterance don't flip state or
+ * reject as a real failure.
+ */
+var speakGen = 0;
+
+/** @type {Array<(active: boolean) => void>} */
+var speakingListeners = [];
+
 /** @type {Promise<VoiceManifest> | null} */
 var voiceManifestPromise = null;
 
@@ -86,10 +99,43 @@ function pickDexVoice() {
 }
 
 /**
+ * @param {boolean} next
+ * @returns {void}
+ */
+function setSpeaking(next) {
+  if (speaking === next) return;
+  speaking = next;
+  for (var i = 0; i < speakingListeners.length; i++) {
+    speakingListeners[i](speaking);
+  }
+}
+
+/**
+ * @returns {boolean}
+ */
+function isSpeaking() {
+  return speaking;
+}
+
+/**
+ * @param {(active: boolean) => void} fn
+ * @returns {() => void}
+ */
+function subscribeSpeaking(fn) {
+  speakingListeners.push(fn);
+  fn(speaking);
+  return function () {
+    var idx = speakingListeners.indexOf(fn);
+    if (idx >= 0) speakingListeners.splice(idx, 1);
+  };
+}
+
+/**
  * @param {string} text
+ * @param {number} gen
  * @returns {Promise<string>}
  */
-function speakSynth(text) {
+function speakSynth(text, gen) {
   return new Promise(function (resolve, reject) {
     if (!window.speechSynthesis) {
       reject(new Error("speechSynthesis not available"));
@@ -103,33 +149,63 @@ function speakSynth(text) {
     u.rate = DEX_RATE;
     u.pitch = DEX_PITCH;
     u.onend = function () {
+      if (gen !== speakGen) {
+        resolve("cancelled");
+        return;
+      }
+      setSpeaking(false);
       resolve("speechSynthesis" + (voice ? ":" + voice.name : ""));
     };
     u.onerror = function () {
+      // cancel() surfaces as onerror — treat a stale gen as a clean stop.
+      if (gen !== speakGen) {
+        resolve("cancelled");
+        return;
+      }
+      setSpeaking(false);
       reject(new Error("TTS error"));
     };
+    setSpeaking(true);
     window.speechSynthesis.speak(u);
   });
 }
 
 /**
  * @param {string} slug
+ * @param {number} gen
  * @returns {Promise<string>}
  */
-function speakClip(slug) {
+function speakClip(slug, gen) {
   return new Promise(function (resolve, reject) {
     var audio = new Audio("data/audio/" + slug + ".mp3");
     currentAudio = audio;
     audio.onended = function () {
       if (currentAudio === audio) currentAudio = null;
+      if (gen !== speakGen) {
+        resolve("cancelled");
+        return;
+      }
+      setSpeaking(false);
       resolve("clip:" + slug);
     };
     audio.onerror = function () {
+      if (currentAudio === audio) currentAudio = null;
+      if (gen !== speakGen) {
+        resolve("cancelled");
+        return;
+      }
+      setSpeaking(false);
       reject(new Error("clip unavailable: " + slug));
     };
+    setSpeaking(true);
     var p = audio.play();
     if (p && p.catch) {
       p.catch(function (/** @type {any} */ err) {
+        if (gen !== speakGen) {
+          resolve("cancelled");
+          return;
+        }
+        setSpeaking(false);
         reject(err instanceof Error ? err : new Error(String(err)));
       });
     }
@@ -143,20 +219,40 @@ function speakClip(slug) {
  */
 function speak(text, slug) {
   stopSpeaking();
+  var gen = speakGen;
   if (slug) {
-    return speakClip(slug).catch(function () {
-      return spokenTextFor(slug, text).then(speakSynth);
+    return speakClip(slug, gen).catch(function () {
+      if (gen !== speakGen) return "cancelled";
+      return spokenTextFor(slug, text).then(function (spoken) {
+        if (gen !== speakGen) return "cancelled";
+        return speakSynth(spoken, gen);
+      });
     });
   }
-  return speakSynth(text);
+  return speakSynth(text, gen);
 }
 
 function stopSpeaking() {
+  speakGen += 1;
   if (currentAudio) {
     currentAudio.pause();
+    // Drop the src so iOS releases the decoder; pause alone can leave audio
+    // buffered and briefly audible after a rapid Speak→Stop.
+    try {
+      currentAudio.removeAttribute("src");
+      currentAudio.load();
+    } catch (_e) {
+      /* ignore */
+    }
     currentAudio = null;
   }
   if (window.speechSynthesis) window.speechSynthesis.cancel();
+  setSpeaking(false);
 }
 
-window.PokeTts = { speak: speak, stop: stopSpeaking };
+window.PokeTts = {
+  speak: speak,
+  stop: stopSpeaking,
+  isSpeaking: isSpeaking,
+  subscribe: subscribeSpeaking,
+};

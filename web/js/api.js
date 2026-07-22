@@ -15,7 +15,7 @@
  * value — tts.js tags manifest.json with it too, and the manifest tracks
  * species_db.json, so a second hardcoded copy would silently drift on a bump.
  */
-var DATA_VERSION = "2";
+var DATA_VERSION = "3";
 
 /** @type {Promise<SpeciesDbPayload> | null} */
 var dbPromise = null;
@@ -71,7 +71,20 @@ function fetchPokemon(name) {
       category: record.category,
       flavorText: record.flavorText,
       evolutionNote: record.evolutionNote,
+      evolutionChain: (record.evolutionChain || []).map(function (s) {
+        return { slug: s.slug, displayName: s.displayName };
+      }),
       dexNumber: record.dexNumber,
+      genderRate: typeof record.genderRate === "number" ? record.genderRate : -1,
+      baseStats: {
+        hp: (record.baseStats && record.baseStats.hp) || 0,
+        attack: (record.baseStats && record.baseStats.attack) || 0,
+        defense: (record.baseStats && record.baseStats.defense) || 0,
+        specialAttack: (record.baseStats && record.baseStats.specialAttack) || 0,
+        specialDefense: (record.baseStats && record.baseStats.specialDefense) || 0,
+        speed: (record.baseStats && record.baseStats.speed) || 0,
+      },
+      weaknesses: (record.weaknesses || []).slice(),
     };
   });
 }

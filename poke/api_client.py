@@ -14,6 +14,22 @@ from poke.config import resolve_path
 
 
 @dataclass(frozen=True)
+class BaseStats:
+    hp: int = 0
+    attack: int = 0
+    defense: int = 0
+    special_attack: int = 0
+    special_defense: int = 0
+    speed: int = 0
+
+
+@dataclass(frozen=True)
+class EvolutionStage:
+    slug: str
+    display_name: str
+
+
+@dataclass(frozen=True)
 class PokemonData:
     name: str
     display_name: str
@@ -24,7 +40,11 @@ class PokemonData:
     category: str
     flavor_text: str
     evolution_note: str
+    evolution_chain: tuple[EvolutionStage, ...]
     dex_number: int | None
+    gender_rate: int
+    base_stats: BaseStats
+    weaknesses: tuple[str, ...]
 
 
 def _slug(name: str) -> str:
@@ -38,11 +58,45 @@ def _title(name: str) -> str:
     return name.replace("-", " ").title().replace(" Mr Mime", " Mr. Mime")
 
 
+def _base_stats_from_record(raw: Any) -> BaseStats:
+    if not isinstance(raw, dict):
+        return BaseStats()
+    return BaseStats(
+        hp=int(raw.get("hp") or 0),
+        attack=int(raw.get("attack") or 0),
+        defense=int(raw.get("defense") or 0),
+        special_attack=int(raw.get("specialAttack") or 0),
+        special_defense=int(raw.get("specialDefense") or 0),
+        speed=int(raw.get("speed") or 0),
+    )
+
+
+def _evolution_chain_from_record(raw: Any, fallback_slug: str, fallback_name: str) -> tuple[EvolutionStage, ...]:
+    if not isinstance(raw, list) or not raw:
+        return (EvolutionStage(slug=fallback_slug, display_name=fallback_name),)
+    stages: list[EvolutionStage] = []
+    for item in raw:
+        if not isinstance(item, dict):
+            continue
+        slug = str(item.get("slug") or "")
+        display = str(item.get("displayName") or _title(slug))
+        if slug:
+            stages.append(EvolutionStage(slug=slug, display_name=display))
+    return tuple(stages) or (EvolutionStage(slug=fallback_slug, display_name=fallback_name),)
+
+
 def record_to_pokemon_data(record: dict[str, Any]) -> PokemonData:
     """Convert a species_db.json bySlug record into PokemonData."""
+    slug = str(record["name"])
+    display = str(record["displayName"])
+    gender_rate = record.get("genderRate")
+    if gender_rate is None:
+        gender_rate = -1
+    else:
+        gender_rate = int(gender_rate)
     return PokemonData(
-        name=str(record["name"]),
-        display_name=str(record["displayName"]),
+        name=slug,
+        display_name=display,
         types=tuple(record.get("types") or ()),
         height_m=float(record.get("heightM") or 0),
         weight_kg=float(record.get("weightKg") or 0),
@@ -50,7 +104,13 @@ def record_to_pokemon_data(record: dict[str, Any]) -> PokemonData:
         category=str(record.get("category") or "Pokémon"),
         flavor_text=str(record.get("flavorText") or "No Pokédex entry available."),
         evolution_note=str(record.get("evolutionNote") or "Evolution data unavailable."),
+        evolution_chain=_evolution_chain_from_record(
+            record.get("evolutionChain"), slug, display
+        ),
         dex_number=record.get("dexNumber"),
+        gender_rate=gender_rate,
+        base_stats=_base_stats_from_record(record.get("baseStats")),
+        weaknesses=tuple(record.get("weaknesses") or ()),
     )
 
 
@@ -218,7 +278,11 @@ class PokeApiClient:
             category=category,
             flavor_text=flavor or "No Pokédex entry available.",
             evolution_note=evo_note,
+            evolution_chain=(EvolutionStage(slug=api_slug, display_name=display),),
             dex_number=dex,
+            gender_rate=-1,
+            base_stats=BaseStats(),
+            weaknesses=(),
         )
 
     def _evolution_note(self, species: dict[str, Any]) -> str:

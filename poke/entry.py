@@ -1,11 +1,11 @@
-"""Build show-host-style Pokédex narration and structured facts."""
+"""Build show-host-style Pokédex narration and structured entry fields."""
 
 from __future__ import annotations
 
 import re
 from dataclasses import dataclass
 
-from poke.api_client import PokemonData
+from poke.api_client import BaseStats, EvolutionStage, PokemonData
 
 # Old-game flavor text SHOUTS the species noun; render it as the proper word.
 _SHOUT_POKEMON = re.compile(r"POK[éÉ]MON")
@@ -19,6 +19,17 @@ def _clean_flavor(text: str) -> str:
     return re.sub(r"\s+", " ", _SHOUT_POKEMON.sub("Pokémon", text or "")).strip()
 
 
+def gender_label(rate: int) -> str:
+    """PokéAPI gender_rate → chip label. Mirrors web/js/entry.js:genderLabel."""
+    if rate < 0:
+        return "—"
+    if rate == 0:
+        return "♂"
+    if rate == 8:
+        return "♀"
+    return "♂ ♀"
+
+
 @dataclass(frozen=True)
 class DexEntry:
     title: str
@@ -26,6 +37,11 @@ class DexEntry:
     types_line: str
     category: str
     height_weight: str
+    gender_label: str
+    abilities: tuple[str, ...]
+    weaknesses: tuple[str, ...]
+    base_stats: BaseStats
+    evolution_chain: tuple[EvolutionStage, ...]
     narration: str
     description: str
     facts: tuple[str, ...]
@@ -36,7 +52,8 @@ def build_entry(data: PokemonData) -> DexEntry:
     types_line = " / ".join(data.types) if data.types else "Unknown"
     hw = f"{data.height_m:.1f} m · {data.weight_kg:.1f} kg"
     dex_bit = f"National No. {data.dex_number}. " if data.dex_number else ""
-    abilities = ", ".join(data.abilities) if data.abilities else "Unknown"
+    abilities = data.abilities if data.abilities else ()
+    g_label = gender_label(data.gender_rate)
 
     narration = (
         f"{data.display_name}! {dex_bit}"
@@ -54,7 +71,8 @@ def build_entry(data: PokemonData) -> DexEntry:
         f"Type: {types_line}",
         f"Category: {data.category}",
         f"Height / Weight: {hw}",
-        f"Ability: {abilities}",
+        f"Gender: {g_label}",
+        f"Ability: {', '.join(abilities) if abilities else 'Unknown'}",
         data.evolution_note,
     )
 
@@ -64,6 +82,11 @@ def build_entry(data: PokemonData) -> DexEntry:
         types_line=types_line,
         category=data.category,
         height_weight=hw,
+        gender_label=g_label,
+        abilities=abilities,
+        weaknesses=data.weaknesses,
+        base_stats=data.base_stats,
+        evolution_chain=data.evolution_chain,
         narration=narration.strip(),
         description=_clean_flavor(data.flavor_text) or data.evolution_note,
         facts=facts,

@@ -24,7 +24,6 @@ import argparse
 import hashlib
 import json
 import time
-import urllib.error
 import urllib.request
 from pathlib import Path
 from typing import Any
@@ -41,6 +40,184 @@ NAMES_PATHS = [ROOT / "data" / "species_names.json", ROOT / "web" / "data" / "sp
 CACHE_DIR = ROOT / "data" / "cache" / "api"
 SPECIES_INDEX = "https://pokeapi.co/api/v2/pokemon-species?limit=100000"
 UA = {"User-Agent": "pocket-pokedex/0.1 (offline warm)"}
+
+# Gen 6+ type chart: attacking type -> defending type -> multiplier (absent = 1).
+# Embedded so weakness lists need no /type/{name} fetches at build time.
+TYPE_NAMES = (
+    "Normal",
+    "Fire",
+    "Water",
+    "Electric",
+    "Grass",
+    "Ice",
+    "Fighting",
+    "Poison",
+    "Ground",
+    "Flying",
+    "Psychic",
+    "Bug",
+    "Rock",
+    "Ghost",
+    "Dragon",
+    "Dark",
+    "Steel",
+    "Fairy",
+)
+
+TYPE_CHART: dict[str, dict[str, float]] = {
+    "Normal": {"Rock": 0.5, "Ghost": 0.0, "Steel": 0.5},
+    "Fire": {
+        "Fire": 0.5,
+        "Water": 0.5,
+        "Grass": 2.0,
+        "Ice": 2.0,
+        "Bug": 2.0,
+        "Rock": 0.5,
+        "Dragon": 0.5,
+        "Steel": 2.0,
+    },
+    "Water": {
+        "Fire": 2.0,
+        "Water": 0.5,
+        "Grass": 0.5,
+        "Ground": 2.0,
+        "Rock": 2.0,
+        "Dragon": 0.5,
+    },
+    "Electric": {
+        "Water": 2.0,
+        "Electric": 0.5,
+        "Grass": 0.5,
+        "Ground": 0.0,
+        "Flying": 2.0,
+        "Dragon": 0.5,
+    },
+    "Grass": {
+        "Fire": 0.5,
+        "Water": 2.0,
+        "Grass": 0.5,
+        "Poison": 0.5,
+        "Ground": 2.0,
+        "Flying": 0.5,
+        "Bug": 0.5,
+        "Rock": 2.0,
+        "Dragon": 0.5,
+        "Steel": 0.5,
+    },
+    "Ice": {
+        "Fire": 0.5,
+        "Water": 0.5,
+        "Grass": 2.0,
+        "Ice": 0.5,
+        "Ground": 2.0,
+        "Flying": 2.0,
+        "Dragon": 2.0,
+        "Steel": 0.5,
+    },
+    "Fighting": {
+        "Normal": 2.0,
+        "Ice": 2.0,
+        "Poison": 0.5,
+        "Flying": 0.5,
+        "Psychic": 0.5,
+        "Bug": 0.5,
+        "Rock": 2.0,
+        "Ghost": 0.0,
+        "Dark": 2.0,
+        "Steel": 2.0,
+        "Fairy": 0.5,
+    },
+    "Poison": {
+        "Grass": 2.0,
+        "Poison": 0.5,
+        "Ground": 0.5,
+        "Rock": 0.5,
+        "Ghost": 0.5,
+        "Steel": 0.0,
+        "Fairy": 2.0,
+    },
+    "Ground": {
+        "Fire": 2.0,
+        "Electric": 2.0,
+        "Grass": 0.5,
+        "Poison": 2.0,
+        "Flying": 0.0,
+        "Bug": 0.5,
+        "Rock": 2.0,
+        "Steel": 2.0,
+    },
+    "Flying": {
+        "Electric": 0.5,
+        "Grass": 2.0,
+        "Fighting": 2.0,
+        "Bug": 2.0,
+        "Rock": 0.5,
+        "Steel": 0.5,
+    },
+    "Psychic": {
+        "Fighting": 2.0,
+        "Poison": 2.0,
+        "Psychic": 0.5,
+        "Dark": 0.0,
+        "Steel": 0.5,
+    },
+    "Bug": {
+        "Fire": 0.5,
+        "Grass": 2.0,
+        "Fighting": 0.5,
+        "Poison": 0.5,
+        "Flying": 0.5,
+        "Psychic": 2.0,
+        "Ghost": 0.5,
+        "Dark": 2.0,
+        "Steel": 0.5,
+        "Fairy": 0.5,
+    },
+    "Rock": {
+        "Fire": 2.0,
+        "Ice": 2.0,
+        "Fighting": 0.5,
+        "Ground": 0.5,
+        "Flying": 2.0,
+        "Bug": 2.0,
+        "Steel": 0.5,
+    },
+    "Ghost": {"Normal": 0.0, "Psychic": 2.0, "Ghost": 2.0, "Dark": 0.5},
+    "Dragon": {"Dragon": 2.0, "Steel": 0.5, "Fairy": 0.0},
+    "Dark": {
+        "Fighting": 0.5,
+        "Psychic": 2.0,
+        "Ghost": 2.0,
+        "Dark": 0.5,
+        "Fairy": 0.5,
+    },
+    "Steel": {
+        "Fire": 0.5,
+        "Water": 0.5,
+        "Electric": 0.5,
+        "Ice": 2.0,
+        "Rock": 2.0,
+        "Steel": 0.5,
+        "Fairy": 2.0,
+    },
+    "Fairy": {
+        "Fire": 0.5,
+        "Fighting": 2.0,
+        "Poison": 0.5,
+        "Dragon": 2.0,
+        "Dark": 2.0,
+        "Steel": 0.5,
+    },
+}
+
+STAT_KEYS = (
+    ("hp", "hp"),
+    ("attack", "attack"),
+    ("defense", "defense"),
+    ("special-attack", "specialAttack"),
+    ("special-defense", "specialDefense"),
+    ("speed", "speed"),
+)
 
 
 def get(url: str, *, refresh: bool = False, retries: int = 3) -> dict[str, Any]:
@@ -90,6 +267,27 @@ def collect_evo_slugs(node: dict[str, Any], out: list[str]) -> None:
         out.append(str(slug))
     for child in node.get("evolves_to") or []:
         collect_evo_slugs(child, out)
+
+
+def extract_base_stats(pokemon: dict[str, Any]) -> dict[str, int]:
+    by_name = {
+        str((s.get("stat") or {}).get("name") or ""): int(s.get("base_stat") or 0)
+        for s in pokemon.get("stats") or []
+    }
+    return {out_key: by_name.get(api_key, 0) for api_key, out_key in STAT_KEYS}
+
+
+def weakness_types(defender_types: list[str]) -> list[str]:
+    """Attacking types that hit this typing for ≥2× (dual-type product)."""
+    weak: list[str] = []
+    for atk in TYPE_NAMES:
+        mult = 1.0
+        row = TYPE_CHART.get(atk, {})
+        for d in defender_types:
+            mult *= float(row.get(d, 1.0))
+        if mult >= 2.0:
+            weak.append(atk)
+    return weak
 
 
 def build(limit: int | None, refresh: bool, delay: float) -> dict[str, Any]:
@@ -155,6 +353,12 @@ def build(limit: int | None, refresh: bool, delay: float) -> dict[str, Any]:
                 dex = pd.get("entry_number")
                 break
 
+        gender_rate = species.get("gender_rate")
+        if gender_rate is None:
+            gender_rate = -1
+        else:
+            gender_rate = int(gender_rate)
+
         by_slug[slug] = {
             "name": slug,
             "displayName": display,
@@ -165,7 +369,11 @@ def build(limit: int | None, refresh: bool, delay: float) -> dict[str, Any]:
             "category": category,
             "flavorText": flavor,
             "evolutionNote": "",  # filled in once every display name is known
+            "evolutionChain": [],  # filled in second pass
             "dexNumber": dex,
+            "genderRate": gender_rate,
+            "baseStats": extract_base_stats(pokemon),
+            "weaknesses": weakness_types(types),
         }
         if (i + 1) % 50 == 0 or i + 1 == total:
             print(f"[{i + 1}/{total}] {display}")
@@ -180,7 +388,12 @@ def build(limit: int | None, refresh: bool, delay: float) -> dict[str, Any]:
     for slug, record in by_slug.items():
         chain_url = evo_for_slug.get(slug)
         names = evo_chains.get(chain_url, []) if chain_url else []
+        if not names:
+            names = [slug]
         shown = [show(s) for s in names]
+        record["evolutionChain"] = [
+            {"slug": s, "displayName": shown[i]} for i, s in enumerate(names)
+        ]
         if len(shown) <= 1:
             record["evolutionNote"] = (
                 f"{shown[0]} does not evolve." if shown else "Evolution data unavailable."
@@ -192,7 +405,7 @@ def build(limit: int | None, refresh: bool, delay: float) -> dict[str, Any]:
     # species (Nidoran♀/♂ -> "nidoran") must resolve to neither, and that is
     # only knowable once every display name is in hand.
     return {
-        "version": 1,
+        "version": 2,
         "count": len(by_slug),
         "bySlug": by_slug,
         "aliases": build_aliases(by_slug),

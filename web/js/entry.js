@@ -16,6 +16,18 @@ function cleanFlavor(text) {
 }
 
 /**
+ * PokéAPI gender_rate → chip label. Mirrors poke/entry.py:gender_label.
+ * @param {number} rate
+ * @returns {string}
+ */
+function genderLabel(rate) {
+  if (rate < 0) return "—";
+  if (rate === 0) return "♂";
+  if (rate === 8) return "♀";
+  return "♂ ♀";
+}
+
+/**
  * @param {PokemonRecord} data
  * @returns {DexEntryView}
  */
@@ -25,7 +37,23 @@ function buildEntry(data) {
     data.heightM.toFixed(1) + " m · " + data.weightKg.toFixed(1) + " kg";
   var dexBit = data.dexNumber ? "National No. " + data.dexNumber + ". " : "";
   var abilities =
-    data.abilities && data.abilities.length ? data.abilities.join(", ") : "Unknown";
+    data.abilities && data.abilities.length ? data.abilities.slice() : [];
+  var weaknesses =
+    data.weaknesses && data.weaknesses.length ? data.weaknesses.slice() : [];
+  var stats = data.baseStats || {
+    hp: 0,
+    attack: 0,
+    defense: 0,
+    specialAttack: 0,
+    specialDefense: 0,
+    speed: 0,
+  };
+  var chain =
+    data.evolutionChain && data.evolutionChain.length
+      ? data.evolutionChain.map(function (s) {
+          return { slug: s.slug, displayName: s.displayName };
+        })
+      : [{ slug: data.name, displayName: data.displayName }];
 
   var narration =
     data.displayName +
@@ -54,15 +82,20 @@ function buildEntry(data) {
     typesLine: typesLine,
     category: data.category,
     heightWeight: hw,
+    genderLabel: genderLabel(typeof data.genderRate === "number" ? data.genderRate : -1),
+    abilities: abilities,
+    weaknesses: weaknesses,
+    baseStats: {
+      hp: stats.hp || 0,
+      attack: stats.attack || 0,
+      defense: stats.defense || 0,
+      specialAttack: stats.specialAttack || 0,
+      specialDefense: stats.specialDefense || 0,
+      speed: stats.speed || 0,
+    },
+    evolutionChain: chain,
     narration: narration.trim(),
     description: cleanFlavor(data.flavorText) || data.evolutionNote,
-    facts: [
-      "Type: " + typesLine,
-      "Category: " + data.category,
-      "Height / Weight: " + hw,
-      "Ability: " + abilities,
-      data.evolutionNote,
-    ],
     attribution: "Data: PokéAPI snapshot (offline). Fan demo only.",
   };
 }

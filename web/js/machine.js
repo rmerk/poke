@@ -284,8 +284,22 @@
           if (c) lookupName(c.name, ++epoch);
         }
         return;
+      case "SPECIES_REQUESTED":
+        // Evolution-strip taps (and similar) jump to another entry without
+        // leaving the dex flow. Same species is a no-op.
+        if (!intent.name) return;
+        if (st.screen === "entry" && st.entry.title === intent.name) return;
+        deps.tts.stop();
+        lookupName(intent.name, ++epoch);
+        return;
       case "SPEAK_REQUESTED":
-        if (st.screen === "entry") speakEntry(st.entry.narration, st.slug);
+        if (st.screen !== "entry") return;
+        // Speak toggles: a second press (or Stop) halts the current clip/synth.
+        if (deps.tts.isSpeaking()) {
+          deps.tts.stop();
+          return;
+        }
+        speakEntry(st.entry.narration, st.slug);
         return;
       case "BACK_PRESSED":
         ++epoch;

@@ -1,5 +1,19 @@
 /** Shared types for Pocket Pokedex web JS (checkJs / tsc). */
 
+interface BaseStats {
+  hp: number;
+  attack: number;
+  defense: number;
+  specialAttack: number;
+  specialDefense: number;
+  speed: number;
+}
+
+interface EvolutionStage {
+  slug: string;
+  displayName: string;
+}
+
 interface PokemonRecord {
   name: string;
   displayName: string;
@@ -10,7 +24,14 @@ interface PokemonRecord {
   category: string;
   flavorText: string;
   evolutionNote: string;
+  /** Ordered stages for the species' evolution family (linear DFS for branches). */
+  evolutionChain: EvolutionStage[];
   dexNumber: number | null;
+  /** PokéAPI gender_rate: -1 genderless, 0 always ♂, 8 always ♀, else both. */
+  genderRate: number;
+  baseStats: BaseStats;
+  /** Attacking types that hit this typing for ≥2×. */
+  weaknesses: string[];
 }
 
 interface SpeciesDbPayload {
@@ -40,11 +61,16 @@ interface DexEntryView {
   typesLine: string;
   category: string;
   heightWeight: string;
+  /** Chip label: "♂", "♀", "♂ ♀", or "—" for genderless. */
+  genderLabel: string;
+  abilities: string[];
+  weaknesses: string[];
+  baseStats: BaseStats;
+  evolutionChain: EvolutionStage[];
   /** Full show-host paragraph — spoken (TTS fallback), no longer shown on screen. */
   narration: string;
   /** The flavor lore alone, cleaned for display — what the readout renders. */
   description: string;
-  facts: string[];
   attribution: string;
 }
 
@@ -102,6 +128,9 @@ interface PokeOcrApi {
 interface PokeTtsApi {
   speak(text: string, slug?: string): Promise<string>;
   stop(): void;
+  isSpeaking(): boolean;
+  /** Notify when clip/synth playback starts or stops (including cancel). */
+  subscribe(fn: (speaking: boolean) => void): () => void;
 }
 
 /* ---------- State machine (web/js/machine.js) ---------- */
@@ -137,6 +166,8 @@ type PokeIntent =
   | { type: "SEARCH_OPENED" }
   | { type: "SEARCH_SUBMITTED"; query: string }
   | { type: "CANDIDATE_PICKED"; index: number }
+  /** Jump to another species entry (e.g. tapped evolution stage). */
+  | { type: "SPECIES_REQUESTED"; name: string }
   | { type: "SPEAK_REQUESTED" }
   | { type: "BACK_PRESSED" };
 
