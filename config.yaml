@@ -36,7 +36,7 @@ tts:
   enabled: true
   engine: "piper"  # piper | espeak | none
   # Piper voice model path (download separately); null = try espeak
-  piper_model: null
+  piper_model: "~/.piper/en_US-eminem-medium.onnx"
   piper_speaker: 0
   espeak_voice: "en"
   espeak_rate: 160

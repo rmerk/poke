@@ -93,7 +93,7 @@ Sources consulted: [PokéAPI fair use](https://pokeapi.co/docs/v2), Apple device
 | Piper / espeak in Python | 4 | 3 | 5 | N/A on phone |
 | Voice-cloning the show's actor | 5 | 5 | 1–5 | 1 | 
 
-**Pick:** Pre-rendered clips as primary — narration is templated and deterministic, so every species' line is known at build time; `scripts/build-voice-clips.py` renders all of them once (Piper > espeak-ng+mbrola us2 > festival kal_diphone > espeak-ng, plus sox pitch/normalize) and the phone just plays MP3s. **The shipped clips are a Piper render using the `en_US-ryan-medium` voice** at `--pitch-cents -100`, chosen over the earlier mbrola us2 render by ear; `manifest.json` records the exact engine and voice so a rebuild reproduces it. `speechSynthesis` (tuned robotic profile, prefers the Fred voice) stays as fallback for missing clips. Cloning the actual voice actor's voice is rejected — not feasible offline and imitating a real person's voice is out of scope for a fan demo. Python Piper/espeak remains for Mac CLI demos only.
+**Pick:** Pre-rendered clips as primary — narration is templated and deterministic, so every species' line is known at build time; `scripts/build-voice-clips.py` renders all of them once (Piper > espeak-ng+mbrola us2 > festival kal_diphone > espeak-ng, plus sox pitch/normalize) and the phone just plays MP3s. **The shipped clips are a Piper render using the `en_US-eminem-medium` voice** at `--pitch-cents -100`; `manifest.json` records the exact engine and voice so a rebuild reproduces it. `speechSynthesis` (tuned robotic profile, prefers the Fred voice) stays as fallback for missing clips. Python Piper/espeak remains for Mac CLI demos only.
 
 ---
 
@@ -178,7 +178,7 @@ Subsequent phases follow these unless a documented change is needed:
 | Data source + cache | **Bundled offline full-species DB** (`web/data/offline/species_db.json`, all 1025); no live PokéAPI at runtime |
 | Species imagery | **Bundled 256px HOME renders** (`web/data/sprites/<slug>.png`, built offline via `scripts/build-sprites.py`) on a rotating stage; Poké Ball emblem fallback; no live sprite CDN. True rotating 3D models rejected (offline/size) |
 | Narration | Templated show-style (no LLM in MVP) |
-| TTS | **Bundled pre-rendered show-style clips** (`web/data/audio/`, rebuilt via `scripts/build-voice-clips.py` — Piper `en_US-ryan-medium` 1.5.0, `--pitch-cents -100`); `speechSynthesis` (robotic profile) as fallback |
+| TTS | **Bundled pre-rendered show-style clips** (`web/data/audio/`, rebuilt via `scripts/build-voice-clips.py` — Piper `en_US-eminem-medium` 1.5.0, `--pitch-cents -100`); `speechSynthesis` (robotic profile) as fallback |
 | UI runtime | **Static web app in Safari** (`web/`); Python retained for Mac tests only |
 | Power | **iPhone battery** |
 | Network | **Offline required** — vendored OCR + local species DB; LAN-only serve OK |

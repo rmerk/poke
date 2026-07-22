@@ -94,7 +94,7 @@ scripts/
                              (--only <slug> for one clip, then --refresh-manifest
                              to rehash the rest without re-rendering them)
                              (build-time only; piper > mbrola us2 > festival kal > espeak-ng.
-                             Shipped clips: piper en_US-ryan-medium, --pitch-cents -100)
+                             Shipped clips: piper en_US-eminem-medium, --pitch-cents -100)
 
 data/offline/species_db.json Bundled species DB, all 1025 (Mac copy — mirror of web/)
 data/species_names.json      Species name list, generated (Mac copy)
@@ -183,11 +183,11 @@ cache, `--limit N` to smoke-test.
   compares both the narration hash and `ttsSha1` (the hash of the text actually
   handed to the synthesizer) and fails on stale clips. Rebuild with the same
   engine the clips were made with; `manifest.json` records `engine`
-  (`piper:en_US-ryan-medium`) **and** `engineVersion`, both pinned by the test.
+  (`piper:en_US-eminem-medium`) **and** `engineVersion`, both pinned by the test.
   The version matters: piper 1.5.0 renders the same model ~2% faster than the
   1.x binary the first clip set used, which a bare engine label cannot detect.
   Re-rendering needs `pip install -e ".[tts]"` plus a voice model
-  (`~/.piper/en_US-ryan-medium.onnx`).
+  (`~/.piper/en_US-eminem-medium.onnx`).
 
   **PATH trap:** the working piper is the venv's (`.venv/bin/piper`, the
   `piper-tts` wheel). A stale standalone `~/.local/bin/piper` can sit earlier on

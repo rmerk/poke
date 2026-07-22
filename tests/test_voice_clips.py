@@ -17,10 +17,10 @@ AUDIO_DIR = ROOT / "web" / "data" / "audio"
 DB_PATH = ROOT / "data" / "offline" / "species_db.json"
 MANIFEST = AUDIO_DIR / "manifest.json"
 # The shipped render settings, per the Decision lock in docs/build-tradeoffs.md:
-# "Piper en_US-ryan-medium, --pitch-cents -100". Rendering with anything else
+# "Piper en_US-eminem-medium, --pitch-cents -100". Rendering with anything else
 # changes how the Pokedex sounds, so a rebuild on a machine with a different
 # toolchain must fail rather than quietly swap the voice mid-set.
-EXPECTED_ENGINE = "piper:en_US-ryan-medium"
+EXPECTED_ENGINE = "piper:en_US-eminem-medium"
 EXPECTED_PITCH_CENTS = -100
 # The model name alone does not pin the sound. Piper 1.5.0 renders the same
 # model ~2% faster than the 1.x binary the original 151 clips were built with,
